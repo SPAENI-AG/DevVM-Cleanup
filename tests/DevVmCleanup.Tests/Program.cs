@@ -117,7 +117,10 @@ Check(cleanRep.Results.Count == 0, "Berichtsmodul wird nie bereinigt (ohne Power
 var withNotes = ModuleRunner.ParseJson<ModuleAnalysis>("{\"module\":\"optional\",\"findings\":[],\"notes\":[\"Hinweis eins\"]}");
 Check(withNotes.Notes.Count == 1 && withNotes.Notes[0] == "Hinweis eins", "Notes gelesen");
 Check(ModuleRunner.BuildContextJson(null) is null && ModuleRunner.BuildContextJson(new[] { " " }) is null, "Kontext ohne Scan-Ordner");
-Check(ModuleRunner.BuildContextJson(new[] { @"D:\src", @"E:\work" }) == "{\"ScanRoots\":\"D:\\\\src|E:\\\\work\"}", "Kontext mit Scan-Ordnern");
+var ctxText = ModuleRunner.BuildContextJson(new[] { @"D:\src", @"E:\work" });
+Check(ctxText is not null && ctxText.StartsWith("b64:"), "Kontext als Base64");
+using (var ctxDoc = JsonDocument.Parse(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(ctxText![4..]))))
+    Check(ctxDoc.RootElement.GetProperty("ScanRoots").GetString() == @"D:\src|E:\work", "Kontext mit Scan-Ordnern");
 Check(ModuleRunner.BuildContextJson(new[] { "a|b" }) is null, "Ordner mit Trennzeichen abgelehnt");
 
 // 6c. mitgelieferte Module: gültige Info-Struktur (Textprüfung der Skripte)

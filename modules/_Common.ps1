@@ -32,6 +32,10 @@ function New-Ctx {
         Hkcu         = 'HKCU:'
     }
     if ($Json) {
+        # "b64:<Base64 des UTF-8-JSON>" umgeht das Quoting-Problem von Windows PowerShell 5.1, das Anführungszeichen
+        # in Argumenten von "-File" verliert. Auch ein Pfad zu einer JSON-Datei ist erlaubt.
+        if ($Json.StartsWith('b64:')) { $Json = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Json.Substring(4))) }
+        elseif (Test-Path -LiteralPath $Json -PathType Leaf) { $Json = Get-Content -LiteralPath $Json -Raw -Encoding UTF8 }
         $o = $Json | ConvertFrom-Json
         foreach ($p in $o.PSObject.Properties) { $ctx[$p.Name] = [string]$p.Value }
     }

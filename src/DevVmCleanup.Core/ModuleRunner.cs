@@ -22,11 +22,14 @@ public sealed class ModuleRunner
     /// <summary>Optional: Kontext-Überschreibung (Pfade/Registry-Zweig) als JSON – für Tests.</summary>
     public string? ContextJson { get; set; }
 
-    /// <summary>Kontext-JSON für die Module: zusätzliche Scan-Ordner (getrennt durch "|"). Leer = Standard.</summary>
+    /// <summary>Kontext für die Module: zusätzliche Scan-Ordner (getrennt durch "|"), als "b64:"+Base64(JSON). Leer = Standard.</summary>
     public static string? BuildContextJson(IEnumerable<string>? scanRoots)
     {
         var roots = (scanRoots ?? Enumerable.Empty<string>()).Select(r => r.Trim()).Where(r => r.Length > 0 && !r.Contains('|')).ToList();
-        return roots.Count == 0 ? null : JsonSerializer.Serialize(new Dictionary<string, string> { ["ScanRoots"] = string.Join("|", roots) });
+        if (roots.Count == 0) return null;
+        var json = JsonSerializer.Serialize(new Dictionary<string, string> { ["ScanRoots"] = string.Join("|", roots) });
+        // Base64 statt rohem JSON: Windows PowerShell 5.1 verliert sonst die Anführungszeichen im Argument
+        return "b64:" + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(json));
     }
 
     public static string DefaultModulesFolder => Path.Combine(AppContext.BaseDirectory, "modules");

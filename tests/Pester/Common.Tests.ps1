@@ -43,6 +43,17 @@ Describe 'Get-CredentialKind' {
     }
 }
 
+Describe 'New-Ctx' {
+    It 'liest den Kontext als JSON, als Base64 (b64:) und aus einer Datei' {
+        $json = '{"ScanRoots":"D:\\src|E:\\work","AppData":"X:\\a"}'
+        (New-Ctx $json).ScanRoots | Should -Be 'D:\src|E:\work'
+        (New-Ctx ('b64:' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json)))).AppData | Should -Be 'X:\a'
+        $f = Join-Path $TestDrive 'ctx.json'
+        Set-Content -Path $f -Value $json -Encoding UTF8
+        (New-Ctx $f).ScanRoots | Should -Be 'D:\src|E:\work'
+    }
+}
+
 Describe 'Split-List' {
     It 'trennt Kommalisten (powershell -File liefert sie als einen String)' {
         (Split-List 'a, b,c') -join '|' | Should -Be 'a|b|c'
