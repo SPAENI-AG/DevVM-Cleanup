@@ -273,11 +273,12 @@ public static class DvcSqlite
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] static extern int sqlite3_exec(IntPtr db, byte[] sql, IntPtr cb, IntPtr arg, out IntPtr err);
     static byte[] Z(string s) { return Encoding.UTF8.GetBytes(s + "\0"); }
 
-    /// <summary>Erste Spalte der ersten Zeile als Zahl; -1 bei Fehler. Datei wird schreibgeschützt geöffnet.</summary>
+    /// <summary>Erste Spalte der ersten Zeile als Zahl; -1 bei Fehler. Nur für KOPIEN gedacht: wird mit Schreibrecht geöffnet,
+    /// weil Datenbanken im WAL-Modus sonst nicht lesbar sind (die -shm-Hilfsdatei muss angelegt werden können). Es wird nichts geändert.</summary>
     public static long Scalar(string file, string sql)
     {
         IntPtr db;
-        if (sqlite3_open_v2(Z(file), out db, 1, IntPtr.Zero) != 0) { if (db != IntPtr.Zero) sqlite3_close(db); return -1; }
+        if (sqlite3_open_v2(Z(file), out db, 2, IntPtr.Zero) != 0) { if (db != IntPtr.Zero) sqlite3_close(db); return -1; }
         try
         {
             IntPtr st;
