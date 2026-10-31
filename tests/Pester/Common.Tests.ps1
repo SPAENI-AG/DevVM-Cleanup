@@ -32,6 +32,17 @@ Describe 'Remove-PathSafe' {
     }
 }
 
+Describe 'Get-CredentialKind' {
+    It 'nennt nur bekannte Typen, nie Host- oder Benutzernamen' {
+        Get-CredentialKind 'git:https://example.com' | Should -Be 'git'
+        Get-CredentialKind 'TERMSRV/beispiel-host' | Should -Be 'TERMSRV'
+        Get-CredentialKind 'VSCredentials_beispiel' | Should -Be 'VSCredentials'
+        Get-CredentialKind 'Nextcloud_alice@example.com:https://x' | Should -Be 'Sonstige'
+        Get-CredentialKind 'nuget.example.com' | Should -Be 'Sonstige'
+        Get-CredentialKind 'LegacyGeneric:target=x' | Should -Be 'LegacyGeneric'
+    }
+}
+
 Describe 'Split-List' {
     It 'trennt Kommalisten (powershell -File liefert sie als einen String)' {
         (Split-List 'a, b,c') -join '|' | Should -Be 'a|b|c'

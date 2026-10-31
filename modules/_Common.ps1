@@ -243,12 +243,15 @@ function Remove-StoredCredential {
 }
 
 function Get-CredentialKind {
-    # Grobe Art eines Zielnamens für Anzeige/Log (ohne Hostnamen): Teil vor dem ersten ':' oder '/'
+    # Art eines Zielnamens für Anzeige/Log. Es werden NUR bekannte, allgemeine Typen genannt – nie Host-, Dienst- oder Benutzernamen.
     param([string]$Target)
+    $known = @('git', 'gh', 'GitHub', 'gcm', 'TERMSRV', 'MicrosoftAccount', 'WindowsLive', 'LegacyGeneric', 'Domain', 'VSCredentials_', 'SSO_POP_Device', 'AzureDevOps')
     $k = ($Target -split '[:/]')[0]
-    if (-not $k) { $k = '?' }
-    if ($k.Length -gt 24) { $k = $k.Substring(0, 24) }
-    $k
+    foreach ($n in $known) {
+        if ($k -like "$n*" -and ($n.EndsWith('_') -or $k.Length -eq $n.Length)) { return $n.TrimEnd('_') }
+    }
+    if ($k -like 'Microsoft*') { return 'Microsoft' }
+    T 'Sonstige' 'Other'
 }
 
 # ---------------------------------------------------------------------------------------------
@@ -309,16 +312,30 @@ function Initialize-Sqlite {
     $script:SqliteReady
 }
 
+function Copy-LockedFile {
+    # Kopiert auch Dateien, die ein laufendes Programm geöffnet hält (Lesen mit FileShare.ReadWrite/Delete).
+    param([string]$Source, [string]$Destination)
+    $in = [IO.File]::Open($Source, [IO.FileMode]::Open, [IO.FileAccess]::Read, ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+    try {
+        $out = [IO.File]::Create($Destination)
+        try { $in.CopyTo($out) } finally { $out.Dispose() }
+    } finally { $in.Dispose() }
+}
+
 function Get-SqlCount {
-    # Zahl aus einer SQLite-Datei lesen (auf einer Kopie, falls gesperrt). -1 = nicht ermittelbar.
+    # Zahl aus einer SQLite-Datei lesen (auf einer Kopie, auch wenn der Browser die Datei sperrt). -1 = nicht ermittelbar.
     param([string]$File, [string]$Sql)
     if (-not (Test-Path -LiteralPath $File)) { return 0 }
     if (-not (Initialize-Sqlite)) { return -1 }
     $tmp = Join-Path ([IO.Path]::GetTempPath()) ('dvc_' + [guid]::NewGuid().ToString('N') + '.db')
     try {
-        Copy-Item -LiteralPath $File -Destination $tmp -Force -ErrorAction Stop
+        Copy-LockedFile -Source $File -Destination $tmp
+        # Write-Ahead-Log mitkopieren, damit jüngste Einträge mitgezählt werden
+        if (Test-Path -LiteralPath "$File-wal") { try { Copy-LockedFile -Source "$File-wal" -Destination "$tmp-wal" } catch { } }
         [DvcSqlite]::Scalar($tmp, $Sql)
-    } catch { -1 } finally { Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue }
+    } catch { -1 } finally {
+        Remove-Item -LiteralPath $tmp, "$tmp-wal", "$tmp-shm" -Force -ErrorAction SilentlyContinue
+    }
 }
 
 function Test-SqlTable {
