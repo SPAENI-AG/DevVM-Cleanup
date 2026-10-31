@@ -154,6 +154,13 @@ using (var doc = JsonDocument.Parse("{\"tag_name\":\"v0.2.0\",\"html_url\":\"htt
 {
     var rel = UpdateChecker.Parse(doc.RootElement);
     Check(rel is not null && rel.DownloadUrl == "https://example.com/z.zip", "Release-Parser: ZIP-Asset");
+    Check(rel is not null && rel.InstallerUrl is null, "Release-Parser: ohne Setup kein Installer-Link");
+}
+
+using (var doc2 = JsonDocument.Parse("{\"tag_name\":\"v0.3.0\",\"html_url\":\"https://example.com/r\",\"assets\":[{\"name\":\"DevVM-Cleanup_0.3.0_win-x64.zip\",\"browser_download_url\":\"https://example.com/z.zip\"},{\"name\":\"DevVM-Cleanup_0.3.0_Setup.exe\",\"browser_download_url\":\"https://example.com/setup.exe\"},{\"name\":\"DevVM-Cleanup_0.3.0_Setup.exe.sha256\",\"browser_download_url\":\"https://example.com/s\"}]}"))
+{
+    var rel2 = UpdateChecker.Parse(doc2.RootElement);
+    Check(rel2 is not null && rel2.InstallerUrl == "https://example.com/setup.exe" && rel2.DownloadUrl == "https://example.com/z.zip", "Release-Parser: Setup- und ZIP-Asset getrennt");
 }
 
 // 9. Hausstil: Firmenname und Entwickler nur wie vorgesehen

@@ -1,8 +1,8 @@
 name: Release
 
 # Auslöser: Tag "v1.2.3" pushen (git tag v1.2.3 && git push origin v1.2.3).
-# Ergebnis: GitHub-Release mit DevVM-Cleanup_<version>_win-x64.zip (Einzeldatei, .NET enthalten)
-# und SHA-256-Prüfsumme. Die Update-Prüfung im Programm findet dieses Release automatisch.
+# Ergebnis: GitHub-Release mit DevVM-Cleanup_<version>_win-x64.zip (portabel, Einzeldatei, .NET enthalten),
+# DevVM-Cleanup_<version>_Setup.exe (Installer, Inno Setup) und je einer SHA-256-Prüfsumme. Die Update-Prüfung im Programm findet dieses Release automatisch.
 
 on:
   push:
@@ -82,6 +82,39 @@ jobs:
           "$hash  $(Split-Path $zip -Leaf)" | Out-File "$zip.sha256" -Encoding ascii
           "zip=$zip" >> $env:GITHUB_OUTPUT
 
+      - name: Installer bauen (Inno Setup)
+        id: setup
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe (Inno Setup) nicht gefunden" }
+          & $iscc "/DAppVersion=$v" installer\DevVM-Cleanup.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup fehlgeschlagen" }
+          "setup=artifacts/DevVM-Cleanup_${v}_Setup.exe" >> $env:GITHUB_OUTPUT
+
+      - name: Installer signieren
+        if: env.HAS_SIGNING == 'true'
+        env:
+          SIGN_PFX_BASE64: ${{ secrets.SIGN_PFX_BASE64 }}
+          SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
+        shell: pwsh
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "sign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SIGN_PFX_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool.FullName sign /f $pfx /p $env:SIGN_PFX_PASSWORD /fd sha256 /tr http://timestamp.digicert.com /td sha256 "${{ steps.setup.outputs.setup }}"
+          if ($LASTEXITCODE -ne 0) { throw "Signieren des Installers fehlgeschlagen" }
+          Remove-Item $pfx
+
+      - name: Installer-Prüfsumme
+        shell: pwsh
+        run: |
+          $setup = "${{ steps.setup.outputs.setup }}"
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
+          "$hash  $(Split-Path $setup -Leaf)" | Out-File "$setup.sha256" -Encoding ascii
+
       - name: Release-Notizen aus CHANGELOG.md
         shell: pwsh
         run: |
@@ -104,4 +137,5 @@ jobs:
         run: |
           $v = "${{ steps.ver.outputs.version }}"
           gh release create "v$v" --target "${{ github.sha }}" "${{ steps.zip.outputs.zip }}" "${{ steps.zip.outputs.zip }}.sha256" `
+            "${{ steps.setup.outputs.setup }}" "${{ steps.setup.outputs.setup }}.sha256" `
             --title "DevVM Cleanup $v" --notes-file notes.md

@@ -37,12 +37,16 @@ powershell -File modules\Browser.ps1 -Action Clean -Categories signin,passwords,
 Was das Tool bewusst **nicht** anfasst: siehe [`docs/NOT-TOUCHED.md`](docs/NOT-TOUCHED.md).
 
 ## Download und Nutzung
-Neueste Version unter **Releases**: ZIP `DevVM-Cleanup_<version>_win-x64.zip` (self-contained, .NET ist enthalten) plus `.sha256`-Prüfsumme.
-ZIP entpacken (der Ordner `modules` und `Help` bleiben neben der `.exe`), `DevVM-Cleanup.exe` starten (Windows fragt nach Administratorrechten).
-Unsignierte Exe: SmartScreen → «Weitere Informationen» → «Trotzdem ausführen». Prüfsumme prüfen:
+Neueste Version unter **Releases**, zwei Varianten (je mit `.sha256`-Prüfsumme, .NET ist enthalten):
+
+- **Installer** `DevVM-Cleanup_<version>_Setup.exe`: installiert nach `Program Files` (Startmenü-Eintrag, Deinstallation über «Apps & Features»). Ein neueres Setup ersetzt die installierte Version (Update). Einstellungen und Logs unter `%APPDATA%\DevVM-Cleanup` bleiben erhalten.
+- **Portabel** `DevVM-Cleanup_<version>_win-x64.zip`: entpacken (die Ordner `modules` und `Help` bleiben neben der `.exe`), `DevVM-Cleanup.exe` starten. Nichts bleibt auf dem System zurück.
+
+Beide Varianten fragen beim Start nach Administratorrechten. Der Update-Hinweis in der App bietet bei einer installierten Version das Setup an, bei der portablen das ZIP; die App aktualisiert sich nie von selbst.
+Unsignierte Exe: SmartScreen → «Weitere Informationen» → «Trotzdem ausführen». Prüfsumme prüfen (Setup oder ZIP):
 
 ```powershell
-(Get-FileHash .\DevVM-Cleanup_<version>_win-x64.zip -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\DevVM-Cleanup_<version>_Setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 **Vorsicht:** Das Tool löscht Daten dauerhaft. Nur in einer Kopie/VM verwenden, nicht auf einem produktiven Arbeitsplatz.

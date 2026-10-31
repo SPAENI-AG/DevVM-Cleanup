@@ -12,7 +12,8 @@ public sealed record ReleaseInfo(
     string PageUrl,          // Release-Seite mit Notizen
     string? DownloadUrl,     // ZIP für Windows x64, falls vorhanden
     string Notes,
-    DateTimeOffset? Published);
+    DateTimeOffset? Published,
+    string? InstallerUrl = null);   // Setup.exe (Inno Setup), falls vorhanden
 
 /// <summary>
 /// Update-Prüfung über GitHub Releases (öffentliche API, keine Anmeldung).
@@ -81,16 +82,18 @@ public static class UpdateChecker
         var version = ParseTag(tag);
         if (version is null) return null;
 
-        string? download = null;
+        string? download = null, installer = null;
         if (r.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
         {
-            var urls = assets.EnumerateArray()
+            var all = assets.EnumerateArray()
                 .Select(a => (Name: a.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "",
                               Url: a.TryGetProperty("browser_download_url", out var u) ? u.GetString() : null))
-                .Where(a => a.Url is not null && a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                .Where(a => a.Url is not null)
                 .ToList();
+            var urls = all.Where(a => a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)).ToList();
             download = urls.FirstOrDefault(a => a.Name.Contains("win-x64", StringComparison.OrdinalIgnoreCase)).Url
                        ?? urls.FirstOrDefault().Url;
+            installer = all.FirstOrDefault(a => a.Name.EndsWith("_Setup.exe", StringComparison.OrdinalIgnoreCase)).Url;
         }
 
         DateTimeOffset? published = null;
@@ -104,7 +107,8 @@ public static class UpdateChecker
             r.TryGetProperty("html_url", out var h) ? h.GetString() ?? ReleasesPage : ReleasesPage,
             download,
             r.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "",
-            published);
+            published,
+            installer);
     }
 
     /// <summary>Soll beim Start geprüft werden? (höchstens alle 20 h, schont das GitHub-Limit von 60 Abfragen/h je IP)</summary>

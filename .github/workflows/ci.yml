@@ -37,3 +37,15 @@ jobs:
         run: |
           Install-Module Pester -MinimumVersion 5.5.0 -Force -SkipPublisherCheck -Scope CurrentUser
           Invoke-Pester tests/Pester -CI -Output Detailed
+      - name: Installer-Test (Inno Setup, ohne Release)
+        shell: pwsh
+        run: |
+          dotnet publish src/DevVmCleanup.App/DevVmCleanup.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish/app
+          if ($LASTEXITCODE -ne 0) { throw "Publish fehlgeschlagen" }
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          & $iscc "/DAppVersion=0.0.0" installer\DevVM-Cleanup.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup fehlgeschlagen" }
+          if (-not (Test-Path "artifacts/DevVM-Cleanup_0.0.0_Setup.exe")) { throw "Setup.exe nicht erzeugt" }
+          # Ordner modules und Help müssen mitgeliefert werden
+          foreach ($d in 'modules', 'Help') { if (-not (Test-Path "publish/app/$d")) { throw "$d fehlt im Publish-Ordner" } }

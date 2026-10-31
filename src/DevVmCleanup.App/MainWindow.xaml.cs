@@ -151,7 +151,10 @@ public partial class MainWindow : Window
 
     private void bt_UpdateDownload_Click(object sender, RoutedEventArgs e)
     {
-        if (_available is not null) OpenUrl(_available.DownloadUrl ?? _available.PageUrl);
+        if (_available is null) return;
+        // Installierte App (Setup legt unins000.exe neben die Exe) bekommt das Setup, die portable Variante das ZIP
+        var installed = File.Exists(Path.Combine(AppContext.BaseDirectory, "unins000.exe"));
+        OpenUrl((installed ? _available.InstallerUrl : null) ?? _available.DownloadUrl ?? _available.PageUrl);
     }
 
     private void bt_UpdateNotes_Click(object sender, RoutedEventArgs e)
