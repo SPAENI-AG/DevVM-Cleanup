@@ -4,6 +4,10 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 
 ## [Unveröffentlicht]
 
+## [1.0.0] - 2026-10-31
+
+Erste stabile Version. Funktionsumfang: Prüfungen, Programme schliessen, Analyse mit Vorschau, Bereinigen, Geheimnis-Scan (nur Bericht), Kontrolllauf und optionaler Abschluss; sieben Module (Office, Browser, Windows-Konten, Entwicklungstools, Optional, Spuren, Geheimnis-Scan).
+
 ### Neu
 - **Installer** (Inno Setup, `DevVM-Cleanup_<version>_Setup.exe`): Release-Workflow baut ihn neben dem ZIP, CI prüft das Setup-Skript bei jedem Lauf. Ein neues Setup ersetzt die installierte Version.
 - Der Update-Hinweis bietet bei einer installierten App das Setup an, bei der portablen Variante das ZIP.
