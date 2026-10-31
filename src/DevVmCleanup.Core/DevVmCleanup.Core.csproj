@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- UI-freie Logik: bewusst net10.0 (ohne -windows), damit sie auch unter Linux-CI testbar ist -->
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DevVmCleanup.Core</RootNamespace>
+  </PropertyGroup>
+</Project>

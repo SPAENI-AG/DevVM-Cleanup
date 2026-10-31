@@ -1,0 +1,35 @@
+<UserControl x:Class="DevVmCleanup.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:DevVmCleanup.App">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="8">
+            <GroupBox>
+                <GroupBox.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{l:Tr Set_General}" VerticalAlignment="Center"/>
+                        <Button Style="{StaticResource HelpButton}" Tag="einstellungen" Click="Help_Click" Margin="8,0,0,0"/>
+                    </StackPanel>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="170"/>
+                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="{l:Tr Set_Language}" Style="{StaticResource FormLabel}"/>
+                    <ComboBox x:Name="cb_Language" Grid.Row="0" Grid.Column="1" SelectionChanged="cb_Language_SelectionChanged">
+                        <ComboBoxItem Tag="de" Content="Deutsch"/>
+                        <ComboBoxItem Tag="en" Content="English"/>
+                    </ComboBox>
+                    <CheckBox x:Name="chk_Updates" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0"
+                              Content="{l:Tr Set_CheckUpdates}" ToolTip="{l:Tr Tip_CheckUpdates}" Click="chk_Updates_Click"/>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

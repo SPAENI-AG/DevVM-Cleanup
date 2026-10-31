@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/DevVmCleanup.Core/DevVmCleanup.Core.csproj" />
+  <Project Path="src/DevVmCleanup.App/DevVmCleanup.App.csproj" />
+  <Project Path="tests/DevVmCleanup.Tests/DevVmCleanup.Tests.csproj" />
+</Solution>

@@ -1,0 +1,28 @@
+# Build
+bin/
+obj/
+dist/
+publish/
+artifacts/
+.vs/
+*.user
+TestResults/
+
+# Geheimnisse und Profildaten – gehören nie ins Repo
+*.pfx
+*.key
+*.pem
+.env
+.env.*
+secret.key
+settings.json
+.git-credentials
+.npmrc
+id_rsa*
+id_ed25519*
+*.ovpn
+*.srconnect
+
+# lokale Notizen
+docs/INTERN*.md
+*.log

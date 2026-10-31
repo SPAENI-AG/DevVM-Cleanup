@@ -1,0 +1,220 @@
+<Window x:Class="DevVmCleanup.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:DevVmCleanup.App"
+        xmlns:v="clr-namespace:DevVmCleanup.App.Views"
+        Title="DevVM Cleanup" Height="780" Width="1000" MinWidth="820" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource AppBackgroundBrush}" FontFamily="Segoe UI"
+        Icon="pack://application:,,,/Assets/icon.ico"
+        Loaded="Window_Loaded" Closing="Window_Closing">
+    <Window.InputBindings>
+        <KeyBinding Key="F1" Command="ApplicationCommands.Help"/>
+        <KeyBinding Key="F5" Command="NavigationCommands.Refresh"/>
+    </Window.InputBindings>
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Help" Executed="mi_Help_Click"/>
+        <CommandBinding Command="NavigationCommands.Refresh" Executed="bt_Analyze_Click"/>
+    </Window.CommandBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Menü -->
+            <RowDefinition Height="Auto"/> <!-- Update-Hinweis -->
+            <RowDefinition Height="*"/>    <!-- Tabs -->
+            <RowDefinition Height="Auto"/> <!-- Log -->
+            <RowDefinition Height="Auto"/> <!-- Footer -->
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" Background="White" Padding="4,2" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,0,0,1">
+            <MenuItem Header="{l:Tr Menu_File}">
+                <MenuItem Header="{l:Tr Menu_Analyze}" InputGestureText="F5" Click="bt_Analyze_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_Exit}" Click="mi_Exit_Click"/>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_Edit}">
+                <MenuItem Header="{l:Tr Menu_Settings}" Click="mi_Settings_Click"/>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_View}">
+                <MenuItem Header="{l:Tr Menu_Language}">
+                    <MenuItem x:Name="mi_LangDe" Header="Deutsch" IsCheckable="True" Click="mi_LangDe_Click"/>
+                    <MenuItem x:Name="mi_LangEn" Header="English" IsCheckable="True" Click="mi_LangEn_Click"/>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="{l:Tr Menu_Help}">
+                <MenuItem Header="{l:Tr Menu_HelpOpen}" InputGestureText="F1" Click="mi_Help_Click"/>
+                <MenuItem Header="{l:Tr Menu_QuickStart}" Tag="schnellstart" Click="mi_HelpTopic_Click"/>
+                <MenuItem Header="{l:Tr Menu_Troubleshooting}" Tag="fehlersuche" Click="mi_HelpTopic_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_CheckUpdates}" Click="mi_CheckUpdates_Click"/>
+                <MenuItem Header="{l:Tr Menu_OpenSettingsFolder}" Click="mi_SettingsFolder_Click"/>
+                <MenuItem Header="{l:Tr Menu_OpenLogFolder}" Click="mi_LogFolder_Click"/>
+                <Separator/>
+                <MenuItem Header="{l:Tr Menu_About}" Click="mi_About_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Hinweis: neue Version verfügbar / Programm wurde aktualisiert -->
+        <Border x:Name="bd_Update" Grid.Row="1" Visibility="Collapsed" Margin="8,8,8,0" Padding="12,6"
+                Background="{StaticResource AccentLightBrush}" BorderBrush="{StaticResource AccentBrush}"
+                BorderThickness="1" CornerRadius="6">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="✕" MinWidth="28" Padding="6,2"
+                        ToolTip="{l:Tr Upd_Close}" Click="bt_UpdateClose_Click" Margin="6,0,0,0"/>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="bt_UpdateDownload" Style="{StaticResource PrimaryButton}" Content="{l:Tr Upd_Download}"
+                            Click="bt_UpdateDownload_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="bt_UpdateNotes" Content="{l:Tr Upd_Notes}" Click="bt_UpdateNotes_Click" Margin="6,0,0,0"/>
+                    <Button x:Name="bt_UpdateSkip" Content="{l:Tr Upd_Skip}" Click="bt_UpdateSkip_Click" Margin="6,0,0,0"/>
+                </StackPanel>
+                <TextBlock x:Name="tb_UpdateText" VerticalAlignment="Center" TextWrapping="Wrap" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextBrush}"/>
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="tc_Main" Grid.Row="2" Margin="8,8,8,6" Background="{StaticResource AppBackgroundBrush}"
+                    BorderBrush="{StaticResource LineBrush}">
+            <!-- Bereinigung -->
+            <TabItem Header="{l:Tr Tab_Cleanup}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+
+                        <!-- 1. Prüfungen -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Checks}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="pruefungen" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <DockPanel>
+                                <Button x:Name="bt_Recheck" DockPanel.Dock="Right" Content="{l:Tr Btn_Recheck}" VerticalAlignment="Top" Click="bt_Recheck_Click"/>
+                                <StackPanel>
+                                    <TextBlock x:Name="tb_CheckVm" Margin="0,2"/>
+                                    <TextBlock x:Name="tb_CheckAdmin" Margin="0,2"/>
+                                    <TextBlock x:Name="tb_CheckProfile" Margin="0,2"/>
+                                    <CheckBox x:Name="chk_AllowNonVm" Margin="0,6,0,0" Visibility="Collapsed"
+                                              Content="{l:Tr Chk_AllowNonVm}" ToolTip="{l:Tr Tip_AllowNonVm}" Click="chk_AllowNonVm_Click"/>
+                                </StackPanel>
+                            </DockPanel>
+                        </GroupBox>
+
+                        <!-- 2. Betroffene Programme -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Programs}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="programme" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <DockPanel>
+                                <Button x:Name="bt_CloseApps" DockPanel.Dock="Right" Content="{l:Tr Btn_CloseApps}" Click="bt_CloseApps_Click"/>
+                                <TextBlock x:Name="tb_Programs" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </DockPanel>
+                        </GroupBox>
+
+                        <!-- 3. Analyse und Auswahl -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Modules}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="analyse" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <DockPanel Margin="0,0,0,8">
+                                    <Button x:Name="bt_Analyze" DockPanel.Dock="Left" Style="{StaticResource PrimaryButton}"
+                                            Content="{l:Tr Btn_Analyze}" Padding="18,6" Click="bt_Analyze_Click"/>
+                                    <TextBlock Text="{l:Tr Lbl_AnalyzeHint}" Style="{StaticResource MutedText}" Margin="12,0,0,0"
+                                               VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                </DockPanel>
+                                <TextBlock x:Name="tb_ModulesNone" Style="{StaticResource MutedText}" Visibility="Collapsed"
+                                           Text="{l:Tr Lbl_ModulesNone}" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="tb_ModuleErrors" Foreground="Firebrick" Visibility="Collapsed" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                                <ItemsControl x:Name="ic_Modules">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8" Padding="10,8" Background="{StaticResource AppBackgroundBrush}"
+                                                    BorderBrush="{StaticResource LineBrush}" BorderThickness="1" CornerRadius="6">
+                                                <StackPanel>
+                                                    <CheckBox IsThreeState="True" IsChecked="{Binding IsChecked}" Content="{Binding Name}"
+                                                              FontWeight="SemiBold" FontSize="14"/>
+                                                    <ItemsControl ItemsSource="{Binding Categories}" Margin="22,4,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Margin="0,3">
+                                                                    <CheckBox IsChecked="{Binding IsChecked}" IsEnabled="{Binding IsEnabled}" Content="{Binding Label}"/>
+                                                                    <TextBlock Text="{Binding Preview}" Margin="22,0,0,0" TextWrapping="Wrap"
+                                                                               Style="{StaticResource MutedText}"/>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- 4. Bereinigen und Kontrolle -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Clean}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="bereinigen" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button x:Name="bt_Clean" Style="{StaticResource PrimaryButton}" Content="{l:Tr Btn_Clean}"
+                                            Padding="18,6" Click="bt_Clean_Click"/>
+                                    <Button x:Name="bt_Verify" Content="{l:Tr Btn_Verify}" Margin="8,0,0,0" Click="bt_Verify_Click"/>
+                                </StackPanel>
+                                <TextBlock x:Name="tb_Verify" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                <ProgressBar x:Name="pb_Busy" IsIndeterminate="True" Height="4" Margin="0,8,0,0" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- 5. Abschluss -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Finish}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="abschluss" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Lbl_NewName}" Style="{StaticResource FormLabel}" Margin="0,0,10,0"/>
+                                    <TextBox x:Name="tb_NewName" Width="180" MaxLength="15"/>
+                                    <Button x:Name="bt_Rename" Content="{l:Tr Btn_Rename}" Margin="8,0,0,0" Click="bt_Rename_Click"/>
+                                    <Button x:Name="bt_Sysprep" Content="{l:Tr Btn_Sysprep}" Margin="24,0,0,0" Click="bt_Sysprep_Click"/>
+                                    <Button x:Name="bt_Shutdown" Content="{l:Tr Btn_Shutdown}" Margin="8,0,0,0" Click="bt_Shutdown_Click"/>
+                                </StackPanel>
+                                <TextBlock Text="{l:Tr Lbl_FinishHint}" Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Einstellungen -->
+            <TabItem x:Name="ti_Settings" Header="{l:Tr Tab_Settings}">
+                <v:SettingsView x:Name="SettingsPage"/>
+            </TabItem>
+        </TabControl>
+
+        <TextBox x:Name="tb_Log" Grid.Row="3" Style="{StaticResource MonoBox}" Height="130" Margin="8,0,8,6"
+                 TextWrapping="NoWrap"/>
+
+        <!-- Footer: links Firma, rechts Version (Entwickler nur im Info-Fenster) -->
+        <Border Grid.Row="4" Background="{StaticResource FooterBrush}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0">
+            <DockPanel Margin="12,4">
+                <TextBlock x:Name="tb_FooterVersion" DockPanel.Dock="Right" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                <TextBlock x:Name="tb_FooterCompany" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

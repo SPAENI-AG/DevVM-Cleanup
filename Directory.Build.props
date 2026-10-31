@@ -1,0 +1,24 @@
+<Project>
+  <!--
+    Gemeinsame Angaben für alle Projekte.
+    Version: EINZIGE Stelle (Footer, Info, Update-Prüfung). Der Release-Workflow prüft sie gegen den Git-Tag.
+    GitHubRepository: "Organisation/Repository" für die Update-Prüfung (Platzhalter OWNER/... schaltet sie ab).
+  -->
+  <PropertyGroup>
+    <Version>0.1.0</Version>
+    <GitHubRepository>SPAENI-AG/DevVM-Cleanup</GitHubRepository>
+
+    <Product>DevVM Cleanup</Product>
+    <Company>SPÄNI Elektro-Mechanik AG</Company>
+    <Authors>SPÄNI Elektro-Mechanik AG</Authors>
+    <Copyright>© SPÄNI Elektro-Mechanik AG</Copyright>
+    <RepositoryUrl>https://github.com/$(GitHubRepository)</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="GitHubRepository" Value="$(GitHubRepository)" />
+  </ItemGroup>
+</Project>

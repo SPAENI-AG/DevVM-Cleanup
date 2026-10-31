@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevVM Cleanup – Help</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>DevVM Cleanup – Help</h1>
+  <div class="lang"><a href="de.html">Deutsch</a><a href="en.html">English</a></div>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#schnellstart">Quick start</a>
+  <a href="#pruefungen">1. Checks</a>
+  <a href="#programme">2. Affected programs</a>
+  <a href="#analyse">3. Analysis and selection</a>
+  <a href="#bereinigen">4. Clean and verification run</a>
+  <a href="#abschluss">5. Finish (optional)</a>
+  <a href="#einstellungen">Settings</a>
+  <a href="#module">Own modules</a>
+  <a href="#fehlersuche">Troubleshooting</a>
+  <a href="#nicht-angefasst">What the tool deliberately does not touch</a>
+  <a href="#dateien">Files and folders</a>
+</nav>
+<main>
+
+<section id="schnellstart">
+<h2>Quick start</h2>
+<p>DevVM Cleanup cleans a <b>development VM</b> before a copy is handed over: sign out everywhere and leave no credentials, tokens or traces of the person who set it up. The Windows account itself (password, sign-in) is <b>never</b> changed.</p>
+<ol>
+<li>Start the program as administrator (Windows asks). Start it with the account the developers will keep using.</li>
+<li><b>1. Checks</b> must be green (VM, administrator, correct profile).</li>
+<li>Click <b>Analyze</b>: each module shows “found: …”. Nothing is deleted.</li>
+<li>Tick the modules/categories you want, click <b>Clean selected …</b> and confirm. Affected programs are closed first (after asking).</li>
+<li>The <b>verification run</b> starts automatically and must report “clean”.</li>
+<li>Optional: change the computer name, run Sysprep or shut down.</li>
+</ol>
+</section>
+
+<section id="pruefungen">
+<h2>1. Checks</h2>
+<ul>
+<li><b>Virtual machine:</b> manufacturer/model according to WMI (Hyper-V, VMware, VirtualBox, KVM/QEMU, Xen, Parallels). On a physical PC cleaning is blocked; only the deliberately set option “not a VM – continue anyway” overrides this.</li>
+<li><b>Administrator rights:</b> required because registry and profile data of all programs are cleaned.</li>
+<li><b>Profile of the signed-in user:</b> the program must run in the profile of the user who is signed in at the PC. If it runs under another administrator account, the wrong profile would be cleaned – cleaning is blocked then.</li>
+</ul>
+</section>
+
+<section id="programme">
+<h2>2. Affected programs</h2>
+<p>Each module lists the programs that lock its data (e.g. Edge, Chrome, Firefox, Outlook, Teams, OneDrive). Running programs – including background processes such as <i>Edge Startup Boost</i> – are shown. <b>Close programs …</b> ends them after confirmation (politely first, then forcefully). Unsaved data is lost.</p>
+</section>
+
+<section id="analyse">
+<h2>3. Analysis and selection</h2>
+<p>The analysis is a pure preview and deletes nothing. Example: <code>Edge / Profile 1: signed in as alice@example.com; 37 passwords; cookies from 112 sites</code>. Categories without findings cannot be selected. All browser profiles are listed individually.</p>
+<h3>Module Office / Microsoft 365</h3>
+<p>Office identities, license tokens, Outlook profiles and cache, unlink OneDrive (synced files stay as normal local files), Teams cache.</p>
+<h3>Module Browser</h3>
+<p>Edge, Chrome, Brave, Vivaldi, Opera, Firefox – all profiles. Selectable individually: sync sign-in, passwords/passkeys, cookies/sessions, site storage, autofill, sessions/tabs, history, download list, cache, password-manager extension data and optionally bookmarks. Extensions and general settings are kept.</p>
+</section>
+
+<section id="bereinigen">
+<h2>4. Clean and verification run</h2>
+<p>After confirmation the selected categories are deleted. The log (below and as a file in the log folder) lists only categories and counts – <b>never passwords or tokens</b> in clear text; error messages are filtered as well.</p>
+<p>Then the <b>verification run</b> analyzes the selected categories again. It must report “clean”. If not, it lists what was still found (common cause: a program is still running or wrote data again when it ended).</p>
+<p><b>Edge:</b> To prevent Edge from signing in again automatically, accounts in Windows (Settings › Accounts › Access work or school) must be removed too. The “Windows accounts” module follows in a later version.</p>
+</section>
+
+<section id="abschluss">
+<h2>5. Finish (optional)</h2>
+<ul>
+<li><b>Change computer name:</b> takes effect after restart.</li>
+<li><b>Sysprep:</b> <code>generalize /oobe /shutdown</code> – removes the computer SID and shuts down. Cannot be undone; use deliberately.</li>
+<li><b>Shut down:</b> in 10 seconds.</li>
+</ul>
+<p>The Windows account (password, sign-in) is never changed.</p>
+</section>
+
+<section id="einstellungen">
+<h2>Settings</h2>
+<p><b>Language:</b> German or English, effective immediately. <b>Update check:</b> asks GitHub for the latest version at startup at most every 20 hours. No usage data is transmitted; there is no telemetry.</p>
+</section>
+
+<section id="module">
+<h2>Own modules</h2>
+<p>Modules are readable PowerShell scripts in the <code>modules</code> folder next to the program (one script per module, functions <code>Analyze</code> and <code>Clean</code>, JSON output). A new file is enough – no recompiling. Without UI: <code>powershell -File modules\Browser.ps1 -Action Analyze</code>. Details: <code>CONTRIBUTING.md</code> in the repository.</p>
+</section>
+
+<section id="fehlersuche">
+<h2>Troubleshooting</h2>
+<ul>
+<li><b>“Cleaning is blocked”:</b> a check is red. Read the message in section 1 (no VM, no administrator, wrong profile).</li>
+<li><b>Verification “not clean”:</b> close programs, analyze again and clean. Error lines in the log show locked files.</li>
+<li><b>“count unknown”:</b> the SQLite file could not be read; cleaning still works.</li>
+<li><b>No modules visible:</b> the <code>modules</code> folder next to the <code>.exe</code> is missing or a script is broken (error text above the list).</li>
+</ul>
+</section>
+
+<section id="nicht-angefasst">
+<h2>What the tool deliberately does not touch</h2>
+<ul>
+<li>The Windows account: password, sign-in, account type, groups.</li>
+<li>Installed programs and extensions, general browser settings, bookmarks (unless explicitly selected).</li>
+<li>Documents, source code and repositories; server mailboxes; OneDrive files (only the connection is unlinked).</li>
+<li>Anything outside the signed-in user's profile.</li>
+</ul>
+<p>Full list: <code>docs/NOT-TOUCHED.md</code> in the repository.</p>
+</section>
+
+<section id="dateien">
+<h2>Files and folders</h2>
+<ul>
+<li>Settings: <code>%APPDATA%\DevVM-Cleanup\settings.json</code> (Help › Open settings folder)</li>
+<li>Logs: <code>%APPDATA%\DevVM-Cleanup\logs\</code> (Help › Open log folder)</li>
+<li>Modules: <code>modules</code> folder next to the program</li>
+<li>No network access except the optional update check.</li>
+</ul>
+</section>
+
+<p class="foot">SPÄNI Elektro-Mechanik AG · Support: <a href="https://support.elektro-spaeni.ch">support.elektro-spaeni.ch</a> · <a href="mailto:support@elektro-spaeni.ch">support@elektro-spaeni.ch</a></p>
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DevVM Cleanup – Hilfe</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>DevVM Cleanup – Hilfe</h1>
+  <div class="lang"><a href="de.html">Deutsch</a><a href="en.html">English</a></div>
+</header>
+<div class="wrap">
+<nav>
+  <a href="#schnellstart">Schnellstart</a>
+  <a href="#pruefungen">1. Prüfungen</a>
+  <a href="#programme">2. Betroffene Programme</a>
+  <a href="#analyse">3. Analyse und Auswahl</a>
+  <a href="#bereinigen">4. Bereinigen und Kontrolllauf</a>
+  <a href="#abschluss">5. Abschluss (optional)</a>
+  <a href="#einstellungen">Einstellungen</a>
+  <a href="#module">Eigene Module</a>
+  <a href="#fehlersuche">Fehlersuche</a>
+  <a href="#nicht-angefasst">Was das Tool bewusst nicht anfasst</a>
+  <a href="#dateien">Dateien und Ordner</a>
+</nav>
+<main>
+
+<section id="schnellstart">
+<h2>Schnellstart</h2>
+<p>DevVM Cleanup bereinigt eine <b>Entwicklungs-VM</b>, bevor sie als Kopie weitergegeben wird: überall abmelden, keine Zugangsdaten, Tokens oder Spuren des Einrichters zurücklassen. Das Windows-Konto selbst (Passwort, Anmeldung) wird <b>nie</b> verändert.</p>
+<ol>
+<li>Programm als Administrator starten (Windows fragt nach). Starten Sie es mit dem Konto, in dem die Entwickler später weiterarbeiten.</li>
+<li><b>1. Prüfungen</b> müssen grün sein (VM, Administrator, richtiges Profil).</li>
+<li><b>Analysieren</b> klicken: pro Modul erscheint «gefunden: …». Es wird nichts gelöscht.</li>
+<li>Gewünschte Module/Kategorien per Häkchen wählen, <b>Ausgewählte bereinigen …</b> klicken und bestätigen. Betroffene Programme werden vorher (nach Rückfrage) geschlossen.</li>
+<li>Der <b>Kontrolllauf</b> läuft automatisch und muss «sauber» melden.</li>
+<li>Optional: Computernamen ändern, Sysprep oder Herunterfahren.</li>
+</ol>
+</section>
+
+<section id="pruefungen">
+<h2>1. Prüfungen</h2>
+<ul>
+<li><b>Virtuelle Maschine:</b> Hersteller/Modell laut WMI (Hyper-V, VMware, VirtualBox, KVM/QEMU, Xen, Parallels). Auf einem echten PC ist das Bereinigen gesperrt; nur die bewusst gesetzte Option «keine VM – trotzdem fortfahren» übersteuert das.</li>
+<li><b>Administratorrechte:</b> nötig, weil Registry und Profildaten aller Programme bereinigt werden.</li>
+<li><b>Profil des angemeldeten Benutzers:</b> das Programm muss im Profil des Benutzers laufen, der am PC angemeldet ist. Läuft es mit einem anderen Administratorkonto, würde das falsche Profil bereinigt – dann ist das Bereinigen gesperrt.</li>
+</ul>
+</section>
+
+<section id="programme">
+<h2>2. Betroffene Programme</h2>
+<p>Jedes Modul nennt die Programme, die seine Daten gesperrt halten (z. B. Edge, Chrome, Firefox, Outlook, Teams, OneDrive). Laufende Programme – auch Hintergrundprozesse wie <i>Edge Startup Boost</i> – werden angezeigt. <b>Programme schliessen …</b> beendet sie nach Bestätigung (erst höflich, dann zwangsweise). Nicht gespeicherte Daten gehen verloren.</p>
+</section>
+
+<section id="analyse">
+<h2>3. Analyse und Auswahl</h2>
+<p>Die Analyse ist reine Vorschau und löscht nichts. Beispiel: <code>Edge / Profil 1: angemeldet als alice@example.com; 37 Passwörter; Cookies von 112 Websites</code>. Kategorien ohne Fund sind nicht wählbar. Alle Browser-Profile werden einzeln aufgeführt.</p>
+<h3>Modul Office / Microsoft 365</h3>
+<p>Office-Identitäten, Lizenz-Tokens, Outlook-Profile und -Cache, OneDrive trennen (synchronisierte Dateien bleiben als normale lokale Dateien), Teams-Cache.</p>
+<h3>Modul Browser</h3>
+<p>Edge, Chrome, Brave, Vivaldi, Opera, Firefox – alle Profile. Einzeln wählbar: Sync-Anmeldung, Passwörter/Passkeys, Cookies/Sitzungen, Website-Speicher, Autofill, Sitzungen/Tabs, Verlauf, Downloadliste, Cache, Daten von Passwortmanager-Erweiterungen und optional Lesezeichen. Erweiterungen und allgemeine Einstellungen bleiben erhalten.</p>
+</section>
+
+<section id="bereinigen">
+<h2>4. Bereinigen und Kontrolllauf</h2>
+<p>Nach der Bestätigung werden die gewählten Kategorien gelöscht. Das Log (unten und als Datei im Logordner) nennt nur Kategorien und Anzahlen – <b>nie Passwörter oder Tokens</b> im Klartext; auch Fehlermeldungen werden gefiltert.</p>
+<p>Danach analysiert der <b>Kontrolllauf</b> die gewählten Kategorien erneut. Er muss «sauber» melden. Wenn nicht, steht dort, was noch gefunden wurde (häufige Ursache: ein Programm läuft noch oder hat beim Beenden wieder Daten geschrieben).</p>
+<p><b>Edge:</b> Damit sich Edge nicht automatisch wieder anmeldet, müssen auch Konten in Windows (Einstellungen › Konten › Zugriff auf Geschäfts- oder Schulkonto) entfernt sein. Das Modul «Windows-Konten» folgt in einer späteren Version.</p>
+</section>
+
+<section id="abschluss">
+<h2>5. Abschluss (optional)</h2>
+<ul>
+<li><b>Computernamen ändern:</b> wirkt nach dem Neustart.</li>
+<li><b>Sysprep:</b> <code>generalize /oobe /shutdown</code> – entfernt die Computer-SID und fährt herunter. Nicht rückgängig zu machen; nur bewusst verwenden.</li>
+<li><b>Herunterfahren:</b> in 10 Sekunden.</li>
+</ul>
+<p>Das Windows-Konto (Passwort, Anmeldung) wird nie verändert.</p>
+</section>
+
+<section id="einstellungen">
+<h2>Einstellungen</h2>
+<p><b>Sprache:</b> Deutsch oder English, sofort wirksam. <b>Update-Prüfung:</b> fragt beim Start höchstens alle 20 Stunden bei GitHub nach der neuesten Version. Es werden keine Nutzungsdaten übertragen; es gibt keine Telemetrie.</p>
+</section>
+
+<section id="module">
+<h2>Eigene Module</h2>
+<p>Module sind lesbare PowerShell-Skripte im Ordner <code>modules</code> neben dem Programm (ein Skript pro Modul, Funktionen <code>Analyze</code> und <code>Clean</code>, Ausgabe JSON). Eine neue Datei genügt – ohne neu zu kompilieren. Ohne Oberfläche: <code>powershell -File modules\Browser.ps1 -Action Analyze</code>. Details: <code>CONTRIBUTING.md</code> im Repository.</p>
+</section>
+
+<section id="fehlersuche">
+<h2>Fehlersuche</h2>
+<ul>
+<li><b>«Bereinigen ist gesperrt»:</b> eine Prüfung ist rot. Meldung in Abschnitt 1 lesen (keine VM, kein Administrator, falsches Profil).</li>
+<li><b>Kontrolllauf «nicht sauber»:</b> Programme schliessen, erneut analysieren und bereinigen. Fehlerzeilen im Log zeigen gesperrte Dateien.</li>
+<li><b>«Anzahl unbekannt»:</b> die SQLite-Datei konnte nicht gelesen werden; die Bereinigung funktioniert trotzdem.</li>
+<li><b>Keine Module sichtbar:</b> Ordner <code>modules</code> neben der <code>.exe</code> fehlt oder ein Skript ist defekt (Fehlertext oberhalb der Liste).</li>
+</ul>
+</section>
+
+<section id="nicht-angefasst">
+<h2>Was das Tool bewusst nicht anfasst</h2>
+<ul>
+<li>Das Windows-Konto: Passwort, Anmeldung, Kontotyp, Gruppen.</li>
+<li>Installierte Programme und Erweiterungen, allgemeine Browser-Einstellungen, Lesezeichen (ausser ausdrücklich gewählt).</li>
+<li>Dokumente, Quellcode und Repositories; Server-Postfächer; OneDrive-Dateien (nur die Verbindung wird getrennt).</li>
+<li>Alles ausserhalb des Profils des angemeldeten Benutzers.</li>
+</ul>
+<p>Vollständige Liste: <code>docs/NOT-TOUCHED.md</code> im Repository.</p>
+</section>
+
+<section id="dateien">
+<h2>Dateien und Ordner</h2>
+<ul>
+<li>Einstellungen: <code>%APPDATA%\DevVM-Cleanup\settings.json</code> (Hilfe › Einstellungsordner öffnen)</li>
+<li>Logs: <code>%APPDATA%\DevVM-Cleanup\logs\</code> (Hilfe › Logordner öffnen)</li>
+<li>Module: Ordner <code>modules</code> neben dem Programm</li>
+<li>Es werden keine Netzwerkzugriffe ausser der optionalen Update-Prüfung gemacht.</li>
+</ul>
+</section>
+
+<p class="foot">SPÄNI Elektro-Mechanik AG · Support: <a href="https://support.elektro-spaeni.ch">support.elektro-spaeni.ch</a> · <a href="mailto:support@elektro-spaeni.ch">support@elektro-spaeni.ch</a></p>
+</main>
+</div>
+</body>
+</html>
