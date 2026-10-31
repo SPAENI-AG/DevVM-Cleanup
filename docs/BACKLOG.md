@@ -8,13 +8,17 @@
 - [ ] `powershell.exe` (5.1) und `pwsh` (7): `Remove-JsonPaths` in beiden Editionen
 - [ ] Single-File-Publish mit Ordnern `modules` und `Help` neben der Exe
 
-## Module (Reihenfolge nach Spezifikation)
-- [ ] **Windows-Konten:** Geschäfts-/Schulkonten, Token-Broker (AAD.BrokerPlugin), Anmeldeinformationsverwaltung
-- [ ] **Entwicklungstools:** Visual Studio (IdentityService), GitHub Copilot, VS Code Accounts, Git `user.name`/`user.email` + Credential Manager, SSH-Schlüssel, NuGet-Zugangsdaten, `.npmrc`-Tokens
-- [ ] **Optional (nur wenn installiert):** device2cloud, Sophos Connect, eCatcher; Lizenz-Hinweise (z. B. Siemens Automation License Manager)
-- [ ] **Spuren:** Temp, Papierkorb, zuletzt verwendet, RDP-Verlauf, PowerShell-History (PSReadLine), Ereignisprotokolle
-- [ ] **Geheimnis-Scan (nur Bericht):** Git-Remotes mit Token in URL, `.git-credentials`, `.env`, `.pfx`, Passwörter in `appsettings.json` o. ä. – UI-Schritt «5. Geheimnis-Scan» ergänzen
-- [ ] Passkeys (Chrome Google Password Manager / Windows Hello) prüfen
+## Module – umgesetzt, auf echten Systemen zu prüfen
+- [ ] **Windows-Konten:** Registry-Pfade (IdentityCRL, WorkplaceJoin, `Windows\CurrentVersion\AAD`) und Broker-Ordner gegen echte Windows-10/11-Profile prüfen; Verhalten nach dem Entfernen (Office/Edge/Teams fragen neu an?)
+- [ ] **Entwicklungstools:** VS-Code-`state.vscdb`-Schlüssel (`secret://…`, `*.auth*`) und VS-`VSCommon`-Pfade je Version prüfen; Git Credential Manager (`gcm:`-Ziele)
+- [ ] **Optional:** echte Ordner von device2cloud, Sophos Connect, eCatcher ermitteln (heute bestmögliche Namen) und Prozessnamen ergänzen
+- [ ] **Spuren:** Ereignisprotokolle (Berechtigungen einzelner Protokolle), Temp-Ordner mit gesperrten Dateien, Papierkorb über alle Laufwerke
+- [ ] **Geheimnis-Scan:** Laufzeit auf grossen Laufwerken, zusätzliche Muster (AWS/Azure-Schlüssel, `.npmrc` in Repos, `*.publishsettings`)
+
+## Weitere Ideen
+- [ ] Docker-/Cloud-CLI-Anmeldungen (`~/.docker`, `~/.aws`, `~/.azure`, `~/.kube`), KeePass-/Passwortmanager-Desktopdaten, `~/.config/gh`
+- [ ] SSH-`config` optional bereinigen
+- [ ] Passkeys (Chrome Google Password Manager) prüfen
 
 ## Verbesserungen
 - [ ] Preview-Texte nach Sprachwechsel neu laden (aktuell zeigt die Vorschau die Sprache der Analyse)

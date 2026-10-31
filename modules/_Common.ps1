@@ -25,6 +25,10 @@ function New-Ctx {
         UserProfile  = $env:USERPROFILE
         AppData      = $env:APPDATA
         LocalAppData = $env:LOCALAPPDATA
+        ProgramData  = $env:ProgramData
+        ProgramFiles = $env:ProgramFiles
+        ProgramFilesX86 = ${env:ProgramFiles(x86)}
+        ScanRoots    = ''          # zusätzliche Scan-Ordner (Geheimnis-Scan), getrennt durch |
         Hkcu         = 'HKCU:'
     }
     if ($Json) {
@@ -70,7 +74,7 @@ function Get-ProtectedPaths {
     # Diese Ordner (und die Wurzeln selbst) werden nie gelöscht – auch nicht, wenn ein Modul es versehentlich verlangt.
     param($Ctx)
     $list = @()
-    foreach ($k in 'UserProfile', 'AppData', 'LocalAppData') { if ($Ctx[$k]) { $list += $Ctx[$k] } }
+    foreach ($k in 'UserProfile', 'AppData', 'LocalAppData', 'ProgramData') { if ($Ctx[$k]) { $list += $Ctx[$k] } }
     if ($Ctx.UserProfile) {
         foreach ($n in 'AppData', 'Documents', 'Desktop', 'Downloads', 'Pictures', 'Videos', 'Music', 'Favorites', 'Links', 'Contacts', 'Saved Games', 'Searches', '3D Objects', 'OneDrive') {
             $list += (Join-Path $Ctx.UserProfile $n)
@@ -88,7 +92,7 @@ function Test-PathInCtx {
     foreach ($prot in (Get-ProtectedPaths $Ctx)) {
         if ([string]::Equals([IO.Path]::GetFullPath($prot).TrimEnd('\', '/'), $full, [StringComparison]::OrdinalIgnoreCase)) { return $false }
     }
-    foreach ($k in 'UserProfile', 'AppData', 'LocalAppData') {
+    foreach ($k in 'UserProfile', 'AppData', 'LocalAppData', 'ProgramData') {
         $root = $Ctx[$k]
         if (-not $root) { continue }
         $r = [IO.Path]::GetFullPath($root).TrimEnd('\', '/')
@@ -157,6 +161,94 @@ function Remove-Target {
     if ($Target.Path) { return (Remove-PathSafe -Path $Target.Path -Ctx $Ctx) }
     if ($Target.Reg) { return (Remove-RegKeySafe -Path $Target.Reg -Ctx $Ctx) }
     0
+}
+
+
+function Remove-ChildrenSafe {
+    # Leert einen Ordner (Inhalt, nicht den Ordner selbst). Gesperrte Elemente werden übersprungen und gezählt.
+    # Rückgabe: @{ Removed = n; Locked = n }
+    param([string]$Path, $Ctx)
+    $removed = 0; $locked = 0
+    if (-not (Test-Path -LiteralPath $Path)) { return @{ Removed = 0; Locked = 0 } }
+    if (-not (Test-PathInCtx -Path (Join-Path $Path '_') -Ctx $Ctx)) { throw "Pfad ausserhalb des erlaubten Bereichs oder geschützt: $Path" }
+    foreach ($c in (Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue)) {
+        try { $removed += Remove-PathSafe -Path $c.FullName -Ctx $Ctx } catch { $locked++ }
+    }
+    @{ Removed = $removed; Locked = $locked }
+}
+
+function Get-ChildCount {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return 0 }
+    @(Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue).Count
+}
+
+# ---------------------------------------------------------------------------------------------
+# Anmeldeinformationsverwaltung (Windows Credential Manager) über advapi32 – nur Zielnamen, nie die Geheimnisse
+# ---------------------------------------------------------------------------------------------
+$script:DvcCredSource = @'
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+public static class DvcCred
+{
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct CREDENTIAL
+    {
+        public uint Flags; public uint Type; public IntPtr TargetName; public IntPtr Comment;
+        public long LastWritten; public uint CredentialBlobSize; public IntPtr CredentialBlob; public uint Persist;
+        public uint AttributeCount; public IntPtr Attributes; public IntPtr TargetAlias; public IntPtr UserName;
+    }
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool CredEnumerateW(string filter, uint flags, out uint count, out IntPtr creds);
+    [DllImport("advapi32.dll")] static extern void CredFree(IntPtr buffer);
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool CredDeleteW(string target, uint type, uint flags);
+
+    /// <summary>Liste "Typ|Zielname" (ohne Benutzername, ohne Geheimnis).</summary>
+    public static string[] List()
+    {
+        uint count; IntPtr ptr;
+        if (!CredEnumerateW(null, 0, out count, out ptr)) return new string[0];
+        try
+        {
+            var list = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                IntPtr p = Marshal.ReadIntPtr(ptr, i * IntPtr.Size);
+                var c = (CREDENTIAL)Marshal.PtrToStructure(p, typeof(CREDENTIAL));
+                list.Add(c.Type + "|" + Marshal.PtrToStringUni(c.TargetName));
+            }
+            return list.ToArray();
+        }
+        finally { CredFree(ptr); }
+    }
+    public static bool Delete(uint type, string target) { return CredDeleteW(target, type, 0); }
+}
+'@
+
+function Get-StoredCredentialTargets {
+    # Rückgabe: Objekte @{ Type = 1; Target = '...' }. Auf Nicht-Windows leer. In Tests überschreibbar.
+    if (-not (Test-IsWindowsHost)) { return @() }
+    try {
+        if (-not ('DvcCred' -as [type])) { Add-Type -TypeDefinition $script:DvcCredSource -ErrorAction Stop }
+        foreach ($e in [DvcCred]::List()) {
+            $i = $e.IndexOf('|')
+            @{ Type = [uint32]$e.Substring(0, $i); Target = $e.Substring($i + 1) }
+        }
+    } catch { @() }
+}
+
+function Remove-StoredCredential {
+    param([uint32]$Type, [string]$Target)
+    [DvcCred]::Delete($Type, $Target)
+}
+
+function Get-CredentialKind {
+    # Grobe Art eines Zielnamens für Anzeige/Log (ohne Hostnamen): Teil vor dem ersten ':' oder '/'
+    param([string]$Target)
+    $k = ($Target -split '[:/]')[0]
+    if (-not $k) { $k = '?' }
+    if ($k.Length -gt 24) { $k = $k.Substring(0, 24) }
+    $k
 }
 
 # ---------------------------------------------------------------------------------------------

@@ -18,7 +18,8 @@
   <a href="#programme">2. Affected programs</a>
   <a href="#analyse">3. Analysis and selection</a>
   <a href="#bereinigen">4. Clean and verification run</a>
-  <a href="#abschluss">5. Finish (optional)</a>
+  <a href="#geheimnis-scan">5. Secret scan (report only)</a>
+  <a href="#abschluss">6. Finish (optional)</a>
   <a href="#einstellungen">Settings</a>
   <a href="#module">Own modules</a>
   <a href="#fehlersuche">Troubleshooting</a>
@@ -36,7 +37,7 @@
 <li>Click <b>Analyze</b>: each module shows “found: …”. Nothing is deleted.</li>
 <li>Tick the modules/categories you want, click <b>Clean selected …</b> and confirm. Affected programs are closed first (after asking).</li>
 <li>The <b>verification run</b> starts automatically and must report “clean”.</li>
-<li>Optional: change the computer name, run Sysprep or shut down.</li>
+<li>Optional: <b>secret scan</b> (report only), then change the computer name, run Sysprep or shut down.</li>
 </ol>
 </section>
 
@@ -61,17 +62,30 @@
 <p>Office identities, license tokens, Outlook profiles and cache, unlink OneDrive (synced files stay as normal local files), Teams cache.</p>
 <h3>Module Browser</h3>
 <p>Edge, Chrome, Brave, Vivaldi, Opera, Firefox – all profiles. Selectable individually: sync sign-in, passwords/passkeys, cookies/sessions, site storage, autofill, sessions/tabs, history, download list, cache, password-manager extension data and optionally bookmarks. Extensions and general settings are kept.</p>
+<h3>Module Windows accounts</h3>
+<p>Connected work/school accounts, token broker (AAD.BrokerPlugin) and the Credential Manager (all saved credentials, e.g. Git, RDP, services). The PC's domain or Azure AD membership and the local Windows account are <b>not</b> changed; they only appear as a note.</p>
+<h3>Module Development tools</h3>
+<p>Visual Studio (IdentityService), GitHub Copilot/CLI, VS Code accounts, Git (<code>user.name</code>/<code>user.email</code>, <code>.git-credentials</code>, Credential Manager), SSH keys and <code>known_hosts</code>, NuGet credentials/API keys and tokens in <code>.npmrc</code>/Yarn. Source code, repositories, extensions and the SSH <code>config</code> are kept.</p>
+<h3>Module Optional programs</h3>
+<p>Only if present: device2cloud/machinetoservice, Sophos Connect, eWON eCatcher (user data and access). Plus <b>license notes</b> (e.g. Siemens Automation License Manager): machine-bound licenses are not changed, only reported.</p>
+<h3>Module Traces</h3>
+<p>Temp, recycle bin, “recent items” (including jump lists and input history), RDP history, PowerShell history (PSReadLine) and the event logs of the whole PC. Very fresh temp files (under 60 seconds) and locked files are skipped.</p>
 </section>
 
 <section id="bereinigen">
 <h2>4. Clean and verification run</h2>
 <p>After confirmation the selected categories are deleted. The log (below and as a file in the log folder) lists only categories and counts – <b>never passwords or tokens</b> in clear text; error messages are filtered as well.</p>
 <p>Then the <b>verification run</b> analyzes the selected categories again. It must report “clean”. If not, it lists what was still found (common cause: a program is still running or wrote data again when it ended).</p>
-<p><b>Edge:</b> To prevent Edge from signing in again automatically, accounts in Windows (Settings › Accounts › Access work or school) must be removed too. The “Windows accounts” module follows in a later version.</p>
+<p><b>Edge:</b> To prevent Edge from signing in again automatically, accounts in Windows (Settings › Accounts › Access work or school) must be removed too. The “Windows accounts” module removes connected accounts; the PC's Azure AD/domain membership is deliberately left unchanged and only reported as a note.</p>
+</section>
+
+<section id="geheimnis-scan">
+<h2>5. Secret scan (report only)</h2>
+<p>Searches the user profile and the extra folders from the settings for files containing credentials: Git remotes with a token in the URL, <code>.git-credentials</code>, <code>.env</code>, <code>.pfx</code>/<code>.p12</code> and private keys, passwords in <code>appsettings.json</code>/<code>secrets.json</code>. The scan <b>deletes nothing</b> and never shows the value of a secret, only path and kind. Please fix findings by hand (e.g. revoke the token, remove the file).</p>
 </section>
 
 <section id="abschluss">
-<h2>5. Finish (optional)</h2>
+<h2>6. Finish (optional)</h2>
 <ul>
 <li><b>Change computer name:</b> takes effect after restart.</li>
 <li><b>Sysprep:</b> <code>generalize /oobe /shutdown</code> – removes the computer SID and shuts down. Cannot be undone; use deliberately.</li>
@@ -82,7 +96,7 @@
 
 <section id="einstellungen">
 <h2>Settings</h2>
-<p><b>Language:</b> German or English, effective immediately. <b>Update check:</b> asks GitHub for the latest version at startup at most every 20 hours. No usage data is transmitted; there is no telemetry.</p>
+<p><b>Language:</b> German or English, effective immediately. <b>Additional scan folders:</b> one folder per line for the secret scan (e.g. where repositories live). <b>Update check:</b> asks GitHub for the latest version at startup at most every 20 hours. No usage data is transmitted; there is no telemetry.</p>
 </section>
 
 <section id="module">

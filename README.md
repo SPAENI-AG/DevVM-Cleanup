@@ -12,19 +12,20 @@ Windows-Tool (WPF, Administratorrechte) zum **Bereinigen von Entwicklungs-VMs** 
 2. **Betroffene Programme** erkennen und nach Bestätigung schliessen (inkl. Hintergrundprozesse, z. B. Edge Startup Boost)
 3. **Analyse mit Vorschau** pro Modul («gefunden: …») – gelöscht wird erst nach Bestätigung
 4. **Module/Kategorien per Checkbox** wählen, bereinigen, Log (nie Passwörter/Tokens im Klartext)
-5. **Kontrolllauf** muss «sauber» melden
-6. Optional: Computernamen ändern oder Sysprep, dann Herunterfahren
+5. **Geheimnis-Scan** (nur Bericht)
+6. **Kontrolllauf** muss «sauber» melden
+7. Optional: Computernamen ändern oder Sysprep, dann Herunterfahren
 
 ## Module
 | Modul | Inhalt | Stand |
 |---|---|---|
 | **Office / M365** | Office-Identitäten, Lizenz-Tokens, Outlook-Profile, OneDrive trennen, Teams-Cache | ✔ |
 | **Browser** | Edge, Chrome, Brave/Opera/Vivaldi, Firefox – **alle Profile**; einzeln wählbar: Sync-Anmeldung, Passwörter/Passkeys, Cookies, Website-Speicher, Autofill, Sitzungen/Tabs, Verlauf, Downloadliste, Cache, Passwortmanager-Erweiterungsdaten, (optional) Lesezeichen | ✔ |
-| Windows-Konten | Geschäfts-/Schulkonten, Token-Broker, Anmeldeinformationsverwaltung | geplant |
-| Entwicklungstools | Visual Studio, Copilot, VS Code, Git, SSH, NuGet, `.npmrc` | geplant |
-| Optional | device2cloud, Sophos Connect, eCatcher, Lizenz-Hinweise | geplant |
-| Spuren | Temp, Papierkorb, Zuletzt verwendet, RDP, PowerShell-History, Ereignisprotokolle | geplant |
-| Geheimnis-Scan | nur Bericht, löscht nichts | geplant |
+| **Windows-Konten** | verbundene Geschäfts-/Schulkonten, Token-Broker (AAD.BrokerPlugin), Anmeldeinformationsverwaltung (Domänen-/Azure-AD-Mitgliedschaft bleibt unverändert, nur Hinweis) | ✔ |
+| **Entwicklungstools** | Visual Studio, GitHub Copilot/CLI, VS Code, Git (Identität, Anmeldedaten), SSH-Schlüssel, NuGet, `.npmrc`/Yarn-Tokens | ✔ |
+| **Optional** | device2cloud, Sophos Connect, eCatcher (nur wenn vorhanden); Lizenz-Hinweise (z. B. Siemens Automation License Manager) | ✔ |
+| **Spuren** | Temp, Papierkorb, Zuletzt verwendet, RDP-Verlauf, PowerShell-History, Ereignisprotokolle | ✔ |
+| **Geheimnis-Scan** | nur Bericht, löscht nie: Git-Remotes mit Token, `.git-credentials`, `.env`, `.pfx`, Passwörter in `appsettings.json` | ✔ |
 
 Module sind **lesbare PowerShell-Skripte** im Ordner `modules` (ein Skript pro Modul, Funktionen `Analyze` und `Clean`, Ausgabe JSON). Sie lassen sich auch ohne Oberfläche nutzen, und ein neues Modul ist nur eine neue Datei – ohne neu zu kompilieren:
 

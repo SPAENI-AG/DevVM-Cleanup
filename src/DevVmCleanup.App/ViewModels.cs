@@ -54,6 +54,11 @@ public sealed class ModuleVm : Notifier
     public string Name => Info.Name.Get(Loc.Instance.Language);
     public ObservableCollection<CategoryVm> Categories { get; } = new();
 
+    private string _notes = "";
+    /// <summary>Hinweise aus der Analyse (ohne Löschaktion).</summary>
+    public string Notes { get => _notes; set { _notes = value; Raise(nameof(Notes)); Raise(nameof(HasNotes)); } }
+    public bool HasNotes => _notes.Length > 0;
+
     /// <summary>Dreiwertig: alle / keine / teilweise gewählt. Setzen wählt alle wählbaren Kategorien.</summary>
     public bool? IsChecked
     {
@@ -82,6 +87,7 @@ public sealed class ModuleVm : Notifier
     /// <summary>Analyseergebnis eintragen: Vorschau je Kategorie; Kategorien ohne Fund werden abgewählt und gesperrt.</summary>
     public void ApplyAnalysis(ModuleAnalysis a)
     {
+        Notes = string.Join(Environment.NewLine, a.Notes.Select(n => "ℹ " + n));
         _busy = true;
         foreach (var c in Categories)
         {

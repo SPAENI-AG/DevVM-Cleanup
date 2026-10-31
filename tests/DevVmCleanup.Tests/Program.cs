@@ -109,6 +109,30 @@ Check(threw, "Ungültige Ausgabe wirft ModuleException");
 Check(ModuleRunner.ParseJson<ModuleCleanResult>("{\"module\":\"x\",\"results\":[{\"category\":\"c\",\"scope\":\"s\",\"ok\":true,\"removed\":3,\"message\":\"\"}]}").Results[0].Removed == 3, "Clean-JSON");
 Check(ProcessCloser.NormalizeName("msedge.exe") == "msedge" && ProcessCloser.NormalizeName("Chrome") == "Chrome", "Prozessname normalisiert");
 
+// 6b. Berichtsmodule, Hinweise, Kontext
+var rep = ModuleRunner.ParseJson<ModuleInfo>("{\"id\":\"secretscan\",\"reportOnly\":true,\"name\":{\"de\":\"x\",\"en\":\"x\"},\"processes\":[],\"categories\":[]}");
+Check(rep.ReportOnly, "reportOnly gelesen");
+var cleanRep = new ModuleRunner("nicht-vorhanden").CleanAsync(rep, new[] { "git" }, "de").GetAwaiter().GetResult();
+Check(cleanRep.Results.Count == 0, "Berichtsmodul wird nie bereinigt (ohne PowerShell-Aufruf)");
+var withNotes = ModuleRunner.ParseJson<ModuleAnalysis>("{\"module\":\"optional\",\"findings\":[],\"notes\":[\"Hinweis eins\"]}");
+Check(withNotes.Notes.Count == 1 && withNotes.Notes[0] == "Hinweis eins", "Notes gelesen");
+Check(ModuleRunner.BuildContextJson(null) is null && ModuleRunner.BuildContextJson(new[] { " " }) is null, "Kontext ohne Scan-Ordner");
+Check(ModuleRunner.BuildContextJson(new[] { @"D:\src", @"E:\work" }) == "{\"ScanRoots\":\"D:\\\\src|E:\\\\work\"}", "Kontext mit Scan-Ordnern");
+Check(ModuleRunner.BuildContextJson(new[] { "a|b" }) is null, "Ordner mit Trennzeichen abgelehnt");
+
+// 6c. mitgelieferte Module: gültige Info-Struktur (Textprüfung der Skripte)
+var modulesDir = Path.Combine(root, "modules");
+var expected = new[] { "Office", "Browser", "WindowsAccounts", "DevTools", "Optional", "Traces", "SecretScan" };
+foreach (var n in expected) Check(File.Exists(Path.Combine(modulesDir, n + ".ps1")), $"Modul fehlt: {n}.ps1");
+foreach (var f in new ModuleRunner(modulesDir).DiscoverScripts())
+{
+    var text = File.ReadAllText(f);
+    Check(text.Contains("function Get-ModuleInfo") && text.Contains("function Analyze") && text.Contains("function Clean"), $"Modul-Vertrag (Info/Analyze/Clean): {Path.GetFileName(f)}");
+    Check(text.Contains("Invoke-ModuleMain"), $"Modul ruft Invoke-ModuleMain: {Path.GetFileName(f)}");
+    Check(File.ReadAllBytes(f).Take(3).SequenceEqual(new byte[] { 0xEF, 0xBB, 0xBF }), $"Modul ohne UTF-8-BOM (Windows PowerShell 5.1 zeigt Umlaute falsch): {Path.GetFileName(f)}");
+}
+Check(new ModuleRunner(modulesDir).DiscoverScripts().Count == expected.Length, "Anzahl Module entspricht der Erwartung");
+
 // 7. Log-Datei schreibt gefiltert
 var logDir = Path.Combine(Path.GetTempPath(), "dvc_log_" + Guid.NewGuid().ToString("N"));
 try

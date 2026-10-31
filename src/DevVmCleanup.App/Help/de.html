@@ -18,7 +18,8 @@
   <a href="#programme">2. Betroffene Programme</a>
   <a href="#analyse">3. Analyse und Auswahl</a>
   <a href="#bereinigen">4. Bereinigen und Kontrolllauf</a>
-  <a href="#abschluss">5. Abschluss (optional)</a>
+  <a href="#geheimnis-scan">5. Geheimnis-Scan (nur Bericht)</a>
+  <a href="#abschluss">6. Abschluss (optional)</a>
   <a href="#einstellungen">Einstellungen</a>
   <a href="#module">Eigene Module</a>
   <a href="#fehlersuche">Fehlersuche</a>
@@ -36,7 +37,7 @@
 <li><b>Analysieren</b> klicken: pro Modul erscheint «gefunden: …». Es wird nichts gelöscht.</li>
 <li>Gewünschte Module/Kategorien per Häkchen wählen, <b>Ausgewählte bereinigen …</b> klicken und bestätigen. Betroffene Programme werden vorher (nach Rückfrage) geschlossen.</li>
 <li>Der <b>Kontrolllauf</b> läuft automatisch und muss «sauber» melden.</li>
-<li>Optional: Computernamen ändern, Sysprep oder Herunterfahren.</li>
+<li>Optional: <b>Geheimnis-Scan</b> (nur Bericht), dann Computernamen ändern, Sysprep oder Herunterfahren.</li>
 </ol>
 </section>
 
@@ -61,17 +62,30 @@
 <p>Office-Identitäten, Lizenz-Tokens, Outlook-Profile und -Cache, OneDrive trennen (synchronisierte Dateien bleiben als normale lokale Dateien), Teams-Cache.</p>
 <h3>Modul Browser</h3>
 <p>Edge, Chrome, Brave, Vivaldi, Opera, Firefox – alle Profile. Einzeln wählbar: Sync-Anmeldung, Passwörter/Passkeys, Cookies/Sitzungen, Website-Speicher, Autofill, Sitzungen/Tabs, Verlauf, Downloadliste, Cache, Daten von Passwortmanager-Erweiterungen und optional Lesezeichen. Erweiterungen und allgemeine Einstellungen bleiben erhalten.</p>
+<h3>Modul Windows-Konten</h3>
+<p>Verbundene Geschäfts-/Schulkonten, Token-Broker (AAD.BrokerPlugin) und die Anmeldeinformationsverwaltung (alle gespeicherten Anmeldungen, z. B. Git, RDP, Dienste). Die Mitgliedschaft des PCs in einer Domäne oder Azure AD sowie das lokale Windows-Konto werden <b>nicht</b> verändert; sie erscheint nur als Hinweis.</p>
+<h3>Modul Entwicklungstools</h3>
+<p>Visual Studio (IdentityService), GitHub Copilot/CLI, VS-Code-Konten, Git (<code>user.name</code>/<code>user.email</code>, <code>.git-credentials</code>, Credential Manager), SSH-Schlüssel und <code>known_hosts</code>, NuGet-Zugangsdaten/API-Schlüssel und Tokens in <code>.npmrc</code>/Yarn. Quellcode, Repositories, Erweiterungen und die SSH-<code>config</code> bleiben.</p>
+<h3>Modul Optionale Programme</h3>
+<p>Nur wenn vorhanden: device2cloud/machinetoservice, Sophos Connect, eWON eCatcher (Benutzerdaten und Zugänge). Dazu <b>Lizenz-Hinweise</b> (z. B. Siemens Automation License Manager): maschinengebundene Lizenzen werden nicht verändert, nur gemeldet.</p>
+<h3>Modul Spuren</h3>
+<p>Temp, Papierkorb, «Zuletzt verwendet» (inkl. Sprunglisten und Eingabeverlauf), RDP-Verlauf, PowerShell-History (PSReadLine) und die Ereignisprotokolle des ganzen PCs. Ganz frische Temp-Dateien (unter 60 Sekunden) und gesperrte Dateien werden übersprungen.</p>
 </section>
 
 <section id="bereinigen">
 <h2>4. Bereinigen und Kontrolllauf</h2>
 <p>Nach der Bestätigung werden die gewählten Kategorien gelöscht. Das Log (unten und als Datei im Logordner) nennt nur Kategorien und Anzahlen – <b>nie Passwörter oder Tokens</b> im Klartext; auch Fehlermeldungen werden gefiltert.</p>
 <p>Danach analysiert der <b>Kontrolllauf</b> die gewählten Kategorien erneut. Er muss «sauber» melden. Wenn nicht, steht dort, was noch gefunden wurde (häufige Ursache: ein Programm läuft noch oder hat beim Beenden wieder Daten geschrieben).</p>
-<p><b>Edge:</b> Damit sich Edge nicht automatisch wieder anmeldet, müssen auch Konten in Windows (Einstellungen › Konten › Zugriff auf Geschäfts- oder Schulkonto) entfernt sein. Das Modul «Windows-Konten» folgt in einer späteren Version.</p>
+<p><b>Edge:</b> Damit sich Edge nicht automatisch wieder anmeldet, müssen auch Konten in Windows (Einstellungen › Konten › Zugriff auf Geschäfts- oder Schulkonto) entfernt sein. Das Modul «Windows-Konten» entfernt verbundene Konten; die Mitgliedschaft des PCs in Azure AD/Domäne bleibt bewusst unverändert und wird nur als Hinweis gemeldet.</p>
+</section>
+
+<section id="geheimnis-scan">
+<h2>5. Geheimnis-Scan (nur Bericht)</h2>
+<p>Sucht im Benutzerprofil und in den Zusatzordnern der Einstellungen nach Dateien mit Zugangsdaten: Git-Remotes mit Token in der URL, <code>.git-credentials</code>, <code>.env</code>, <code>.pfx</code>/<code>.p12</code> und private Schlüssel, Passwörter in <code>appsettings.json</code>/<code>secrets.json</code>. Der Scan <b>löscht nichts</b> und zeigt nie den Wert eines Geheimnisses, nur Pfad und Art. Funde bitte von Hand beheben (z. B. Token widerrufen, Datei entfernen).</p>
 </section>
 
 <section id="abschluss">
-<h2>5. Abschluss (optional)</h2>
+<h2>6. Abschluss (optional)</h2>
 <ul>
 <li><b>Computernamen ändern:</b> wirkt nach dem Neustart.</li>
 <li><b>Sysprep:</b> <code>generalize /oobe /shutdown</code> – entfernt die Computer-SID und fährt herunter. Nicht rückgängig zu machen; nur bewusst verwenden.</li>
@@ -82,7 +96,7 @@
 
 <section id="einstellungen">
 <h2>Einstellungen</h2>
-<p><b>Sprache:</b> Deutsch oder English, sofort wirksam. <b>Update-Prüfung:</b> fragt beim Start höchstens alle 20 Stunden bei GitHub nach der neuesten Version. Es werden keine Nutzungsdaten übertragen; es gibt keine Telemetrie.</p>
+<p><b>Sprache:</b> Deutsch oder English, sofort wirksam. <b>Zusätzliche Scan-Ordner:</b> ein Ordner pro Zeile für den Geheimnis-Scan (z. B. dort, wo Repositories liegen). <b>Update-Prüfung:</b> fragt beim Start höchstens alle 20 Stunden bei GitHub nach der neuesten Version. Es werden keine Nutzungsdaten übertragen; es gibt keine Telemetrie.</p>
 </section>
 
 <section id="module">

@@ -20,6 +20,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="{l:Tr Set_Language}" Style="{StaticResource FormLabel}"/>
                     <ComboBox x:Name="cb_Language" Grid.Row="0" Grid.Column="1" SelectionChanged="cb_Language_SelectionChanged">
@@ -28,6 +29,10 @@
                     </ComboBox>
                     <CheckBox x:Name="chk_Updates" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,8,0,0"
                               Content="{l:Tr Set_CheckUpdates}" ToolTip="{l:Tr Tip_CheckUpdates}" Click="chk_Updates_Click"/>
+                    <TextBlock Grid.Row="2" Text="{l:Tr Set_ScanRoots}" Style="{StaticResource FormLabel}" Margin="0,8,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="tb_ScanRoots" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,8,0,0" Height="70"
+                             AcceptsReturn="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto"
+                             ToolTip="{l:Tr Tip_ScanRoots}" LostFocus="tb_ScanRoots_LostFocus"/>
                 </Grid>
             </GroupBox>
         </StackPanel>

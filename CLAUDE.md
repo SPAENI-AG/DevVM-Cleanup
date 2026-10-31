@@ -83,9 +83,9 @@ Ohne `-Action` (Dot-Sourcing, z. B. Pester) passiert nichts ausser dem Laden der
 2. Betroffene Programme erkennen und nach Bestätigung schliessen (inkl. Hintergrundprozesse, z. B. Edge Startup Boost).
 3. Analyse mit Vorschau pro Modul („gefunden: …“) – Standard; gelöscht wird erst nach Bestätigung.
 4. Module/Kategorien per Checkbox wählen, bereinigen, Log (nie Passwörter/Tokens).
-5. Geheimnis-Scan: nur Bericht, löscht nichts (Modul offen, siehe Backlog).
+5. Geheimnis-Scan: nur Bericht, löscht nichts (`SecretScan.ps1`, eigener Schritt in der UI).
 6. Kontrolllauf muss „sauber“ melden (erneute Analyse der gewählten Kategorien ohne Funde).
-7. Optional: Computernamen ändern oder Sysprep; dann Herunterfahren (`modules/_Finish.ps1`).
+7. Optional: Computernamen ändern oder Sysprep; dann Herunterfahren (`modules/_Finish.ps1`). (In der UI nummeriert: 5 Geheimnis-Scan, 6 Abschluss.)
 
 ## Stand der Module
 
@@ -93,11 +93,16 @@ Ohne `-Action` (Dot-Sourcing, z. B. Pester) passiert nichts ausser dem Laden der
 |---|---|
 | Office/M365 (`Office.ps1`) | umgesetzt: Identitäten, Lizenz-Tokens, Outlook-Profile, OneDrive trennen, Teams-Cache |
 | Browser (`Browser.ps1`) | umgesetzt: Edge, Chrome, Brave/Opera/Vivaldi (Chromium), Firefox; alle Profile; 10 Kategorien einzeln wählbar |
-| Windows-Konten | offen (Geschäfts-/Schulkonten, AAD.BrokerPlugin, Anmeldeinformationsverwaltung) |
-| Entwicklungstools | offen (VS IdentityService, Copilot, VS Code, Git, SSH, NuGet, .npmrc) |
-| Optional (device2cloud, Sophos Connect, eCatcher, Lizenz-Hinweise) | offen |
-| Spuren | offen (Temp, Papierkorb, zuletzt verwendet, RDP, PSReadLine, Ereignisprotokolle) |
-| Geheimnis-Scan | offen (nur Bericht) |
+| Windows-Konten (`WindowsAccounts.ps1`) | umgesetzt: verbundene Konten (IdentityCRL/WorkplaceJoin), Token-Broker, Anmeldeinformationsverwaltung (advapi32, nur Zielnamen); Azure-AD-/Domänen-Mitgliedschaft nur als Hinweis |
+| Entwicklungstools (`DevTools.ps1`) | umgesetzt: VS, Copilot/gh, VS Code, Git, SSH, NuGet, .npmrc/Yarn |
+| Optional (`Optional.ps1`) | umgesetzt (Pfade bestmöglich, prüfen): device2cloud, Sophos Connect, eCatcher; Lizenz-Hinweise (nur `notes`) |
+| Spuren (`Traces.ps1`) | umgesetzt: Temp, Papierkorb, Zuletzt verwendet, RDP, PSReadLine, Ereignisprotokolle |
+| Geheimnis-Scan (`SecretScan.ps1`) | umgesetzt, **nur Bericht** (`reportOnly`), `Clean` ist leer; zusätzliche Ordner über Einstellungen (`ScanRoots`) |
+
+Neu im Modul-Vertrag: `Analyze` darf zusätzlich `notes` (Hinweise ohne Löschaktion) liefern; `Get-ModuleInfo` darf `reportOnly = $true` setzen
+(UI zeigt solche Module im Schritt «Geheimnis-Scan», nie in der Bereinigungs-Auswahl; `ModuleRunner.CleanAsync` führt sie nie aus).
+Funktionen mit Windows-Abhängigkeit (`Get-StoredCredentialTargets`, `Get-DsregStatus`, `Get-RecycleBinCount`, `Get-EventLogsWithRecords` …) sind in
+den Tests überschreibbar (Funktion im `BeforeAll` neu definieren).
 
 ## Build und Test
 

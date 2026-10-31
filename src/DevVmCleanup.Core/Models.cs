@@ -26,6 +26,8 @@ public sealed class ModuleInfo
     [JsonPropertyName("name")] public LocalizedText Name { get; set; } = new();
     [JsonPropertyName("processes")] public List<string> Processes { get; set; } = new();
     [JsonPropertyName("categories")] public List<CategoryInfo> Categories { get; set; } = new();
+    /// <summary>Nur Bericht (z. B. Geheimnis-Scan): wird nie bereinigt.</summary>
+    [JsonPropertyName("reportOnly")] public bool ReportOnly { get; set; }
     /// <summary>Pfad des Skripts (wird vom ModuleRunner gesetzt).</summary>
     [JsonIgnore] public string ScriptPath { get; set; } = "";
 }
@@ -45,6 +47,8 @@ public sealed class ModuleAnalysis
 {
     [JsonPropertyName("module")] public string Module { get; set; } = "";
     [JsonPropertyName("findings")] public List<Finding> Findings { get; set; } = new();
+    /// <summary>Hinweise ohne Löschaktion (z. B. maschinengebundene Lizenzen, Azure-AD-Mitgliedschaft).</summary>
+    [JsonPropertyName("notes")] public List<string> Notes { get; set; } = new();
 }
 
 public sealed class CleanResult

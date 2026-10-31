@@ -24,6 +24,7 @@ public partial class SettingsView : UserControl
         var s = App.Settings;
         cb_Language.SelectedIndex = s.Language == "en" ? 1 : 0;
         chk_Updates.IsChecked = s.CheckForUpdates;
+        tb_ScanRoots.Text = string.Join(Environment.NewLine, s.ScanRoots);
         _loading = false;
     }
 
@@ -36,6 +37,14 @@ public partial class SettingsView : UserControl
     private void chk_Updates_Click(object sender, RoutedEventArgs e)
     {
         App.Settings.CheckForUpdates = chk_Updates.IsChecked == true;
+        MainWindow.TrySave();
+    }
+
+    private void tb_ScanRoots_LostFocus(object sender, RoutedEventArgs e)
+    {
+        App.Settings.ScanRoots = tb_ScanRoots.Text
+            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim()).Where(x => x.Length > 0 && !x.Contains('|')).Distinct().ToList();
         MainWindow.TrySave();
     }
 

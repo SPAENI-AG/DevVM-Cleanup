@@ -22,6 +22,13 @@ public sealed class ModuleRunner
     /// <summary>Optional: Kontext-Überschreibung (Pfade/Registry-Zweig) als JSON – für Tests.</summary>
     public string? ContextJson { get; set; }
 
+    /// <summary>Kontext-JSON für die Module: zusätzliche Scan-Ordner (getrennt durch "|"). Leer = Standard.</summary>
+    public static string? BuildContextJson(IEnumerable<string>? scanRoots)
+    {
+        var roots = (scanRoots ?? Enumerable.Empty<string>()).Select(r => r.Trim()).Where(r => r.Length > 0 && !r.Contains('|')).ToList();
+        return roots.Count == 0 ? null : JsonSerializer.Serialize(new Dictionary<string, string> { ["ScanRoots"] = string.Join("|", roots) });
+    }
+
     public static string DefaultModulesFolder => Path.Combine(AppContext.BaseDirectory, "modules");
 
     public ModuleRunner(string? modulesFolder = null) => ModulesFolder = modulesFolder ?? DefaultModulesFolder;
@@ -68,7 +75,7 @@ public sealed class ModuleRunner
     public async Task<ModuleCleanResult> CleanAsync(ModuleInfo module, IEnumerable<string> categories, string lang, CancellationToken ct = default)
     {
         var cats = categories.ToList();
-        if (cats.Count == 0) return new ModuleCleanResult { Module = module.Id };   // nie ohne ausdrückliche Auswahl löschen
+        if (cats.Count == 0 || module.ReportOnly) return new ModuleCleanResult { Module = module.Id };   // nie ohne ausdrückliche Auswahl löschen; Berichtsmodule nie
         return ParseJson<ModuleCleanResult>(await RunAsync(BuildArguments(module.ScriptPath, "Clean", cats, lang, ContextJson), ct).ConfigureAwait(false));
     }
 

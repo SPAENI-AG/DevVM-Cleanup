@@ -10,6 +10,9 @@ public sealed class AppSettings
 
     public string Language { get; set; } = "de";
 
+    /// <summary>Zusätzliche Ordner für den Geheimnis-Scan (neben dem Benutzerprofil).</summary>
+    public List<string> ScanRoots { get; set; } = new();
+
     // --- Updates (GitHub Releases) ---
     public bool CheckForUpdates { get; set; } = true;
     public DateTime? LastUpdateCheckUtc { get; set; }

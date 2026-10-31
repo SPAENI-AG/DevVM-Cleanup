@@ -4,6 +4,17 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 
 ## [Unveröffentlicht]
 
+## [0.2.0] - 2026-10-31
+
+### Neu
+- Modul **Windows-Konten**: verbundene Geschäfts-/Schulkonten, Token-Broker (AAD.BrokerPlugin), Anmeldeinformationsverwaltung. Die Domänen-/Azure-AD-Mitgliedschaft und das lokale Windows-Konto bleiben unverändert (nur Hinweis).
+- Modul **Entwicklungstools**: Visual Studio, GitHub Copilot/CLI, VS-Code-Konten, Git (Identität, Anmeldedaten), SSH-Schlüssel, NuGet-Zugangsdaten, `.npmrc`/Yarn-Tokens.
+- Modul **Optionale Programme**: device2cloud, Sophos Connect, eCatcher (nur wenn vorhanden) plus Lizenz-Hinweise (z. B. Siemens Automation License Manager, nichts verändert).
+- Modul **Spuren**: Temp, Papierkorb, Zuletzt verwendet, RDP-Verlauf, PowerShell-History, Ereignisprotokolle.
+- Modul **Geheimnis-Scan** (nur Bericht, löscht nie): Git-Remotes mit Token, `.git-credentials`, `.env`, Zertifikate/private Schlüssel, Passwörter in `appsettings.json`/`secrets.json`; zusätzliche Scan-Ordner in den Einstellungen.
+- Module können Hinweise (`notes`) und das Kennzeichen `reportOnly` liefern; die Oberfläche zeigt Hinweise unter dem Modul und kennt den neuen Schritt «5. Geheimnis-Scan».
+- Löschschutz: `ProgramData` als erlaubte Wurzel, geschützte Standardordner, Verknüpfungen werden nie verfolgt.
+
 ## [0.1.0] - 2026-10-31
 
 ### Neu

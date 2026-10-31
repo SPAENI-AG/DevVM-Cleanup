@@ -21,7 +21,11 @@
 - Analyse und Geheimnis-Scan verändern nichts. «Clean» ohne ausdrückliche Kategorienwahl löscht nichts.
 
 **Bekannte Grenzen**
-- Passkeys, die in Windows Hello / im Windows-Konto gespeichert sind, liegen ausserhalb der Browser-Profile (Modul «Windows-Konten», geplant).
-- Edge kann sich mit einem noch vorhandenen Windows-Geschäfts-/Schulkonto beim nächsten Start wieder anmelden (Modul «Windows-Konten», geplant).
+- Passkeys, die in Windows Hello / im Windows-Konto gespeichert sind, werden nicht entfernt (Windows-Hello-PIN/Schlüssel gehören zur Anmeldung am PC).
+- Ist der PC selbst mit Azure AD oder einer Domäne verbunden, bleibt das bestehen (nur Hinweis). Edge kann sich dann mit dem Konto des Geräts wieder anmelden.
+- Der Geheimnis-Scan durchsucht nicht `AppData` (ausser .NET User Secrets), nicht `node_modules`/`.git`-Verlauf/`bin`/`obj` und ist auf Tiefe 8 begrenzt; er findet nicht alles.
+- SSH-`config`, Docker-/Cloud-CLI-Anmeldungen (`~/.docker`, `~/.aws`, `~/.azure`, `~/.kube`) und Passwort-Datenbanken (KeePass) werden **nicht** bereinigt (Backlog).
+- Maschinengebundene Lizenzen (Siemens ALM, CodeMeter, FactoryTalk) werden nur gemeldet, nie verändert.
+- Die Ordner von device2cloud, Sophos Connect und eCatcher sind eine bestmögliche Zuordnung; bitte mit der installierten Version prüfen.
 - Chromium-«Web Data»/«Login Data» und Firefox-Dateien werden mit SQLite bereinigt (VACUUM); auf SSD/Snapshots können Reste in Dateisystem-Schattenkopien bleiben.
 - Die Liste bekannter Passwortmanager-Erweiterungen ist in `modules/Browser.ps1` und lässt sich ergänzen.

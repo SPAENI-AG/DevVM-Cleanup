@@ -12,7 +12,8 @@ public partial class MainWindow : Window
 {
     private readonly ModuleRunner _runner = new();
     private readonly RunLog _log = new();
-    private readonly List<ModuleVm> _modules = new();
+    private readonly List<ModuleVm> _modules = new();               // Module mit Bereinigung
+    private readonly List<ModuleInfo> _scanModules = new();         // Berichtsmodule (Geheimnis-Scan), löschen nie
     private PreflightData? _preflightData;
     private PreflightResult? _preflight;
     private bool _analyzed;
@@ -237,7 +238,7 @@ public partial class MainWindow : Window
     {
         Mouse.OverrideCursor = b ? Cursors.Wait : null;
         pb_Busy.Visibility = b ? Visibility.Visible : Visibility.Collapsed;
-        foreach (var c in new Control[] { bt_Recheck, bt_CloseApps, bt_Analyze, bt_Clean, bt_Verify, bt_Rename, bt_Sysprep, bt_Shutdown, ic_Modules })
+        foreach (var c in new Control[] { bt_Recheck, bt_CloseApps, bt_Analyze, bt_Clean, bt_Verify, bt_Scan, bt_Rename, bt_Sysprep, bt_Shutdown, ic_Modules })
             c.IsEnabled = !b;
     }
 
@@ -308,13 +309,19 @@ public partial class MainWindow : Window
         Busy(true);
         var (mods, errors) = await _runner.LoadModulesAsync();
         _modules.Clear();
-        foreach (var m in mods) _modules.Add(new ModuleVm(m));
+        _scanModules.Clear();
+        foreach (var m in mods)
+        {
+            if (m.ReportOnly) _scanModules.Add(m);
+            else _modules.Add(new ModuleVm(m));
+        }
         ic_Modules.ItemsSource = _modules;
         tb_ModulesNone.Visibility = _modules.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         foreach (var err in errors) Log(Loc.T("Log_ModuleError", err.Split(':')[0], LogRedactor.Redact(err)));
         tb_ModuleErrors.Visibility = errors.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         tb_ModuleErrors.Text = string.Join(Environment.NewLine, errors.Select(x => Loc.T("Lbl_ModuleError", LogRedactor.Redact(x))));
-        Log(Loc.T("Log_ModulesLoaded", _modules.Count));
+        Log(Loc.T("Log_ModulesLoaded", _modules.Count + _scanModules.Count));
+        bt_Scan.IsEnabled = _scanModules.Count > 0;
         Busy(false);
     }
 
@@ -374,6 +381,7 @@ public partial class MainWindow : Window
                 m.ApplyAnalysis(a);
                 total += a.Findings.Count;
                 foreach (var f in a.Findings) Log($"  {m.Info.Id} · {f.Scope}: {f.Label}");
+                foreach (var n in a.Notes) Log($"  {m.Info.Id} · ℹ {n}");
             }
             catch (Exception ex)
             {
@@ -492,7 +500,38 @@ public partial class MainWindow : Window
         Busy(false);
     }
 
-    // --- 5. Abschluss (optional) -------------------------------------------------
+    // --- 5. Geheimnis-Scan (nur Bericht) ---------------------------------------------
+    private async void bt_Scan_Click(object sender, RoutedEventArgs e)
+    {
+        Busy(true);
+        Log(Loc.T("Log_Scanning"));
+        _runner.ContextJson = ModuleRunner.BuildContextJson(App.Settings.ScanRoots);
+        var lines = new List<string>();
+        try
+        {
+            foreach (var m in _scanModules)
+            {
+                try
+                {
+                    var a = await _runner.AnalyzeAsync(m, null, Loc.Instance.Language);
+                    lines.AddRange(a.Findings.Select(f => $"{f.Scope}  –  {f.Label}"));
+                }
+                catch (Exception ex)
+                {
+                    Log(Loc.T("Log_AnalyzeFail", m.Id, LogRedactor.Redact(ex.Message)));
+                }
+            }
+        }
+        finally { _runner.ContextJson = null; }
+
+        tb_ScanResult.Visibility = Visibility.Visible;
+        tb_ScanResult.Text = lines.Count == 0 ? Loc.T("Lbl_ScanNone") : string.Join(Environment.NewLine, lines);
+        Log(Loc.T("Log_ScanDone", lines.Count));
+        foreach (var l in lines) Log("  " + l);
+        Busy(false);
+    }
+
+    // --- 6. Abschluss (optional) -------------------------------------------------
     private async Task Finish(string action, string? name = null)
     {
         Busy(true);

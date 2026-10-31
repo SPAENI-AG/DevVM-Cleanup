@@ -139,6 +139,18 @@
                                                 <StackPanel>
                                                     <CheckBox IsThreeState="True" IsChecked="{Binding IsChecked}" Content="{Binding Name}"
                                                               FontWeight="SemiBold" FontSize="14"/>
+                                                    <TextBlock Text="{Binding Notes}" Margin="22,4,0,0" TextWrapping="Wrap" Foreground="#8A5A00">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding HasNotes}" Value="False">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
                                                     <ItemsControl ItemsSource="{Binding Categories}" Margin="22,4,0,0">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
@@ -177,7 +189,26 @@
                             </StackPanel>
                         </GroupBox>
 
-                        <!-- 5. Abschluss -->
+                        <!-- 5. Geheimnis-Scan (nur Bericht) -->
+                        <GroupBox Margin="0,0,0,8">
+                            <GroupBox.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{l:Tr Grp_Scan}" VerticalAlignment="Center"/>
+                                    <Button Style="{StaticResource HelpButton}" Tag="geheimnis-scan" Click="Help_Click" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </GroupBox.Header>
+                            <StackPanel>
+                                <DockPanel>
+                                    <Button x:Name="bt_Scan" DockPanel.Dock="Left" Content="{l:Tr Btn_Scan}" Click="bt_Scan_Click"/>
+                                    <TextBlock Text="{l:Tr Lbl_ScanHint}" Style="{StaticResource MutedText}" Margin="12,0,0,0"
+                                               VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                </DockPanel>
+                                <TextBox x:Name="tb_ScanResult" Style="{StaticResource MonoBox}" Height="120" Margin="0,8,0,0"
+                                         TextWrapping="NoWrap" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <!-- 6. Abschluss -->
                         <GroupBox Margin="0,0,0,8">
                             <GroupBox.Header>
                                 <StackPanel Orientation="Horizontal">
