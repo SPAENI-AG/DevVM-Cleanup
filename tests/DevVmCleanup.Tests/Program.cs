@@ -94,8 +94,8 @@ try
 }
 finally { Directory.Delete(tmp, true); }
 
-var args = ModuleRunner.BuildArguments(@"C:\m\Office.ps1", "Clean", new[] { "identity", "license" }, "en", null);
-Check(args.SequenceEqual(new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", @"C:\m\Office.ps1", "-Action", "Clean", "-Lang", "en", "-Categories", "identity,license" }), "Argumente Clean");
+var cleanArgs = ModuleRunner.BuildArguments(@"C:\m\Office.ps1", "Clean", new[] { "identity", "license" }, "en", null);
+Check(cleanArgs.SequenceEqual(new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", @"C:\m\Office.ps1", "-Action", "Clean", "-Lang", "en", "-Categories", "identity,license" }), "Argumente Clean");
 Check(!ModuleRunner.BuildArguments("x.ps1", "Analyze", null, "de", null).Contains("-Categories"), "Analyse ohne Kategorien = alle");
 
 var json = "Warnung\n{\"module\":\"office\",\"findings\":[{\"category\":\"identity\",\"scope\":\"Office\",\"label\":\"angemeldet als alice@example.com\",\"count\":1}]}\n";
