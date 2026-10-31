@@ -219,7 +219,8 @@ function Analyze-ChromiumProfile {
         $path = if (Test-Path -LiteralPath (P $dir 'Network', 'Cookies')) { P $dir 'Network', 'Cookies' } else { Join-Path $dir 'Cookies' }
         if (Test-Path -LiteralPath $path) {
             $n = Get-SqlCount $path 'SELECT count(DISTINCT host_key) FROM cookies'
-            if ($n -ne 0) { Add-IfAny ([ref]$f) 'cookies' $scope ((T 'Cookies von {0} Websites' 'cookies from {0} sites') -f $(if ($n -lt 0) { '?' } else { $n })) ([math]::Max(1, $n)) }
+            if ($n -lt 0) { Add-IfAny ([ref]$f) 'cookies' $scope (T 'Cookies vorhanden (Anzahl erst nach Schliessen des Browsers lesbar – die Datei ist gesperrt)' 'cookies present (count readable only after closing the browser – the file is locked)') 1 }
+            elseif ($n -gt 0) { Add-IfAny ([ref]$f) 'cookies' $scope ((T 'Cookies von {0} Websites' 'cookies from {0} sites') -f $n) $n }
         }
     }
     if ($Want -contains 'sitestorage') {
@@ -305,7 +306,8 @@ function Analyze-FirefoxProfile {
         $c = Join-Path $dir 'cookies.sqlite'
         if (Test-Path -LiteralPath $c) {
             $n = Get-SqlCount $c 'SELECT count(DISTINCT host) FROM moz_cookies'
-            if ($n -ne 0) { Add-IfAny ([ref]$f) 'cookies' $scope ((T 'Cookies von {0} Websites' 'cookies from {0} sites') -f $(if ($n -lt 0) { '?' } else { $n })) ([math]::Max(1, $n)) }
+            if ($n -lt 0) { Add-IfAny ([ref]$f) 'cookies' $scope (T 'Cookies vorhanden (Anzahl erst nach Schliessen des Browsers lesbar)' 'cookies present (count readable only after closing the browser)') 1 }
+            elseif ($n -gt 0) { Add-IfAny ([ref]$f) 'cookies' $scope ((T 'Cookies von {0} Websites' 'cookies from {0} sites') -f $n) $n }
         }
     }
     if ($Want -contains 'sitestorage') {
