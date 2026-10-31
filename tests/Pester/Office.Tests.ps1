@@ -54,18 +54,31 @@ Describe 'Office – Dateien' {
     }
 }
 
+Describe 'Office – gesperrte Protokolle sind kein Fund und kein Fehler' {
+    It 'OneDrive-Protokollordner zählt nicht und blockiert nichts' {
+        $h = Join-Path $TestDrive 'h3'
+        $ctx = @{ UserProfile = $h; AppData = (Join-Path $h 'AppData\Roaming'); LocalAppData = (Join-Path $h 'AppData\Local'); Hkcu = 'HKCU:\Software\DevVmCleanupTest' }
+        New-Item -ItemType Directory -Force -Path (Join-Path $ctx.LocalAppData 'Microsoft\OneDrive\logs') | Out-Null
+        Set-Content -Path (Join-Path $ctx.LocalAppData 'Microsoft\OneDrive\logs\a.log') -Value 'x'
+        (Analyze -Ctx $ctx -Categories @('onedrive')).findings.Count | Should -Be 0
+        ((Clean -Ctx $ctx -Categories @('onedrive')).results | Where-Object { -not $_.ok }).Count | Should -Be 0
+    }
+}
+
 Describe 'Office – Registry (nur Windows)' -Skip:(-not $isWindowsHost) {
     BeforeEach {
         $script:ctx = @{ UserProfile = $TestDrive; AppData = $TestDrive; LocalAppData = $TestDrive; Hkcu = 'HKCU:\Software\DevVmCleanupTest' }
         $id = "$($script:ctx.Hkcu)\Software\Microsoft\Office\16.0\Common\Identity\Identities\ABC_Test"
         New-Item -Path $id -Force | Out-Null
         New-ItemProperty -Path $id -Name 'EmailAddress' -Value 'alice@example.com' -Force | Out-Null
+        New-Item -Path "$($script:ctx.Hkcu)\Software\Microsoft\OneDrive\Accounts\FileCoAuth" -Force | Out-Null
         New-Item -Path "$($script:ctx.Hkcu)\Software\Microsoft\OneDrive\Accounts\Business1" -Force | Out-Null
         New-ItemProperty -Path "$($script:ctx.Hkcu)\Software\Microsoft\OneDrive\Accounts\Business1" -Name 'UserEmail' -Value 'alice@example.com' -Force | Out-Null
     }
     AfterEach { Remove-Item -Path 'HKCU:\Software\DevVmCleanupTest' -Recurse -Force -ErrorAction SilentlyContinue }
     It 'zeigt „angemeldet als“ und entfernt die Identität' {
         (Analyze -Ctx $script:ctx -Categories @('identity')).findings[0].label | Should -BeLike '*alice@example.com*'
+        (Analyze -Ctx $script:ctx -Categories @('onedrive')).findings[0].label | Should -Not -BeLike '*FileCoAuth*'
         [void](Clean -Ctx $script:ctx -Categories @('identity', 'onedrive'))
         (Analyze -Ctx $script:ctx -Categories @('identity', 'onedrive')).findings.Count | Should -Be 0
     }

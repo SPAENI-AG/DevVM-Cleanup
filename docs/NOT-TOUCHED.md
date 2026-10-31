@@ -21,6 +21,7 @@
 - Analyse und Geheimnis-Scan verändern nichts. «Clean» ohne ausdrückliche Kategorienwahl löscht nichts.
 
 **Bekannte Grenzen**
+- Ereignisprotokolle: Es zählen und werden geleert nur Protokolle mit Einträgen älter als 10 Minuten; ganz frische Einträge (auch der Löschvorgang selbst) bleiben.
 - Passkeys, die in Windows Hello / im Windows-Konto gespeichert sind, werden nicht entfernt (Windows-Hello-PIN/Schlüssel gehören zur Anmeldung am PC).
 - Ist der PC selbst mit Azure AD oder einer Domäne verbunden, bleibt das bestehen (nur Hinweis). Edge kann sich dann mit dem Konto des Geräts wieder anmelden.
 - Der Geheimnis-Scan durchsucht nicht `AppData` (ausser .NET User Secrets), nicht `node_modules`/`.git`-Verlauf/`bin`/`obj` und ist auf Tiefe 8 begrenzt; er findet nicht alles.

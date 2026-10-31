@@ -18,7 +18,7 @@ function Get-ModuleInfo {
     [ordered]@{
         id         = 'office'
         name       = [ordered]@{ de = 'Office / Microsoft 365'; en = 'Office / Microsoft 365' }
-        processes  = @('OUTLOOK', 'WINWORD', 'EXCEL', 'POWERPNT', 'ONENOTE', 'MSACCESS', 'olk', 'OneDrive', 'ms-teams', 'Teams', 'lync')
+        processes  = @('OUTLOOK', 'WINWORD', 'EXCEL', 'POWERPNT', 'ONENOTE', 'MSACCESS', 'olk', 'OneDrive', 'FileCoAuth', 'FileSyncHelper', 'ms-teams', 'Teams', 'lync')
         categories = @(
             [ordered]@{ id = 'identity'; de = 'Office-Identitäten (Anmeldung)'; en = 'Office identities (sign-in)'; default = $true }
             [ordered]@{ id = 'license';  de = 'Lizenz-Tokens';                   en = 'License tokens';              default = $true }
@@ -57,7 +57,7 @@ function Get-OfficeTargets {
         onedrive = @(
             @{ Reg = "$h\Software\Microsoft\OneDrive\Accounts" }
             @{ Path = (P $l 'Microsoft', 'OneDrive', 'settings') }
-            @{ Path = (P $l 'Microsoft', 'OneDrive', 'logs') }
+            @{ Path = (P $l 'Microsoft', 'OneDrive', 'logs'); Optional = $true }   # Protokolle: nur nach Möglichkeit, nie ein Fund
         )
         teams    = @(
             @{ Path = (P $a 'Microsoft', 'Teams') }
@@ -84,6 +84,7 @@ function Get-OneDriveAccountNames {
     $base = "$($Ctx.Hkcu)\Software\Microsoft\OneDrive\Accounts"
     $names = @()
     foreach ($id in (Get-RegChildNames $base)) {
+        if ($id -notmatch '^(Business\d+|Personal)$') { continue }   # z. B. "FileCoAuth" ist kein Konto
         $mail = Get-RegValue "$base\$id" 'UserEmail'
         $names += $(if ($mail) { [string]$mail } else { $id })
     }
@@ -134,7 +135,7 @@ function Analyze {
     }
     if ($want -contains 'onedrive') {
         $names = Get-OneDriveAccountNames $Ctx
-        $present = @($targets.onedrive | Where-Object { Test-TargetExists $_ }).Count
+        $present = @($targets.onedrive | Where-Object { -not $_.Optional -and (Test-TargetExists $_) }).Count
         if ($names.Count -gt 0) {
             $findings += New-Finding 'onedrive' $scope ((T 'verbunden mit {0}' 'linked to {0}') -f ($names -join ', ')) $names.Count
         } elseif ($present -gt 0) {
@@ -161,7 +162,7 @@ function Clean {
         $removed = 0; $errors = @()
         foreach ($t in $targets[$cat]) {
             try { $removed += Remove-Target $t $Ctx }
-            catch { $errors += $_.Exception.Message }
+            catch { if (-not $t.Optional) { $errors += $_.Exception.Message } }   # optionale Ziele (Protokolle) dürfen gesperrt sein
         }
         $results += New-Result $cat 'Office' ($errors.Count -eq 0) $removed ($errors -join '; ')
     }

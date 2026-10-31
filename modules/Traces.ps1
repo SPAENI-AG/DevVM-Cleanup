@@ -63,14 +63,30 @@ function Get-RecycleBinCount {
 }
 
 function Clear-RecycleBinSafe {
+    # Laufwerk für Laufwerk: Datenträger ohne Papierkorb (z. B. optisches Laufwerk) dürfen nicht den ganzen Vorgang scheitern lassen.
     if (-not (Test-IsWindowsHost)) { return }
-    Clear-RecycleBin -Force -ErrorAction Stop
+    foreach ($d in [IO.DriveInfo]::GetDrives()) {
+        if ($d.DriveType -ne 'Fixed' -and $d.DriveType -ne 'Removable') { continue }
+        if (-not $d.IsReady) { continue }
+        try { Clear-RecycleBin -DriveLetter $d.Name.Substring(0, 1) -Force -ErrorAction Stop } catch { }
+    }
+    $left = Get-RecycleBinCount
+    if ($left -gt 0) { throw ((T 'Papierkorb nicht vollständig geleert ({0} Elemente übrig)' 'Recycle bin not completely emptied ({0} items left)') -f $left) }
 }
 
 function Get-EventLogsWithRecords {
-    # Namen der Ereignisprotokolle mit mindestens einem Eintrag
+    # Namen der Ereignisprotokolle mit ALTEN Einträgen (älter als 10 Minuten). Protokolle füllen sich laufend neu und das Löschen
+    # selbst schreibt einen Eintrag – ein Protokoll mit nur frischen Einträgen zählt daher nicht, sonst wäre der Kontrolllauf nie "sauber".
     if (-not (Test-IsWindowsHost)) { return @() }
-    try { @(Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | Where-Object { $_.RecordCount -gt 0 } | ForEach-Object { $_.LogName }) } catch { @() }
+    $limit = (Get-Date).AddMinutes(-10)
+    $names = @()
+    try {
+        foreach ($log in (Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | Where-Object { $_.RecordCount -gt 0 })) {
+            $oldest = Get-WinEvent -LogName $log.LogName -Oldest -MaxEvents 1 -ErrorAction SilentlyContinue
+            if ($oldest -and $oldest.TimeCreated -lt $limit) { $names += $log.LogName }
+        }
+    } catch { }
+    $names
 }
 
 function Clear-EventLogSafe {
@@ -128,7 +144,7 @@ function Analyze {
     }
     if ($want -contains 'eventlogs') {
         $logs = @(Get-EventLogsWithRecords)
-        if ($logs.Count -gt 0) { $f += New-Finding 'eventlogs' $scope ((T '{0} Ereignisprotokolle mit Einträgen' '{0} event logs with entries') -f $logs.Count) $logs.Count }
+        if ($logs.Count -gt 0) { $f += New-Finding 'eventlogs' $scope ((T '{0} Ereignisprotokolle mit Einträgen (älter als 10 Minuten)' '{0} event logs with entries (older than 10 minutes)') -f $logs.Count) $logs.Count }
     }
     [ordered]@{ module = 'traces'; findings = @($f); notes = @() }
 }

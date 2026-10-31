@@ -4,6 +4,12 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 
 ## [Unveröffentlicht]
 
+### Behoben (erster Lauf in einer Test-VM)
+- Office/OneDrive: `FileCoAuth`/`FileSyncHelper` werden mit geschlossen; der Protokollordner ist optional (gesperrte Protokolle sind weder Fund noch Fehler); `FileCoAuth` wird nicht mehr als Konto angezeigt.
+- Spuren/Papierkorb: Laufwerk für Laufwerk leeren, Datenträger ohne Papierkorb brechen nicht mehr ab.
+- Spuren/Ereignisprotokolle: nur Protokolle mit Einträgen älter als 10 Minuten zählen (sie füllen sich sofort neu); der Kontrolllauf kann damit «sauber» melden.
+- Browser: gesperrte Cookie-Datei wird ehrlich angezeigt, WAL-Datenbanken sind lesbar; Credential-Anzeige ohne Namen; Kontext als `b64:` gegen das Quoting von Windows PowerShell 5.1.
+
 ## [0.2.0] - 2026-10-31
 
 ### Neu
