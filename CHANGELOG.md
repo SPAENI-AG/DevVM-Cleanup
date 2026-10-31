@@ -4,6 +4,10 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 
 ## [Unveröffentlicht]
 
+### Geändert
+- Workflows: `actions/checkout` 7 und `actions/setup-dotnet` 6.
+- Geheimnis-Scan zeigt vollständige Pfade.
+
 ### Behoben (erster Lauf in einer Test-VM)
 - Office/OneDrive: `FileCoAuth`/`FileSyncHelper` werden mit geschlossen; der Protokollordner ist optional (gesperrte Protokolle sind weder Fund noch Fehler); `FileCoAuth` wird nicht mehr als Konto angezeigt.
 - Spuren/Papierkorb: Laufwerk für Laufwerk leeren, Datenträger ohne Papierkorb brechen nicht mehr ab.
