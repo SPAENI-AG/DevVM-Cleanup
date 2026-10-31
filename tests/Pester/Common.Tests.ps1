@@ -54,7 +54,8 @@ Describe 'SQLite (nur Windows)' -Skip:(-not $isWindowsHost) {
     It 'zählt und leert Tabellen' {
         Initialize-Sqlite | Should -BeTrue
         $db = Join-Path $TestDrive 'test.db'
-        # leere Datenbank anlegen und befüllen
+        # leere Datei = gültige leere SQLite-Datenbank (Exec öffnet nur vorhandene Dateien)
+        New-Item -ItemType File -Path $db -Force | Out-Null
         [DvcSqlite]::Exec($db, 'CREATE TABLE logins(id INTEGER); INSERT INTO logins VALUES (1),(2),(3);') | Should -Be 0
         Get-SqlCount -File $db -Sql 'SELECT count(*) FROM logins' | Should -Be 3
         Invoke-SqlDeleteAll -File $db -Tables @('logins', 'gibtsnicht') | Should -Be 1
