@@ -45,6 +45,7 @@ Describe 'Geheimnis-Scan' {
         $by['certs'].Count | Should -Be 2
         $by['appsettings'].Count | Should -Be 2
         ($r.findings | ForEach-Object { $_.scope }) | Should -Not -BeLike '*node_modules*'
+        ($r.findings | Where-Object { $_.category -eq 'env' }).scope | Should -Be (Join-Path $script:ctx.UserProfile 'src\app\.env')
     }
     It 'nennt nie den Wert des Geheimnisses' {
         ((Analyze -Ctx $script:ctx) | ConvertTo-Json -Depth 6) | Should -Not -BeLike '*geheim-beispiel*'

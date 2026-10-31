@@ -71,13 +71,6 @@ function Find-ScanFiles {
     }
 }
 
-function Get-RelativeDisplay {
-    param([string]$Path, [string]$Root)
-    $r = $Root.TrimEnd('\', '/')
-    if ($Path.StartsWith($r, [StringComparison]::OrdinalIgnoreCase)) { return ('~' + $Path.Substring($r.Length)) }
-    $Path
-}
-
 function Test-GitConfigToken {
     # Liefert Remote-Namen mit Zugangsdaten in der URL: https://user:pw@host, https://token@host
     param([string]$File)
@@ -139,7 +132,7 @@ function Analyze {
             if ($seen.ContainsKey($file)) { continue }
             $seen[$file] = $true
             $name = [IO.Path]::GetFileName($file); $lname = $name.ToLowerInvariant()
-            $disp = Get-RelativeDisplay $file $root
+            $disp = $file   # vollständiger Pfad (bei mehreren Scan-Ordnern eindeutig)
 
             if ($want -contains 'git') {
                 if ($lname -eq 'config' -and (Split-Path -Leaf (Split-Path -Parent $file)) -eq '.git') {
