@@ -153,7 +153,7 @@ public partial class MainWindow : Window
     {
         if (_available is null) return;
         // Installierte App (Setup legt unins000.exe neben die Exe) bekommt das Setup, die portable Variante das ZIP
-        var installed = File.Exists(Path.Combine(AppContext.BaseDirectory, "unins000.exe"));
+        var installed = System.IO.File.Exists(System.IO.Path.Combine(AppContext.BaseDirectory, "unins000.exe"));
         OpenUrl((installed ? _available.InstallerUrl : null) ?? _available.DownloadUrl ?? _available.PageUrl);
     }
 
