@@ -4,6 +4,8 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 
 ## [Unveröffentlicht]
 
+## [0.2.0] - 2026-10-31
+
 ### Geändert
 - Workflows: `actions/checkout` 7 und `actions/setup-dotnet` 6.
 - Geheimnis-Scan zeigt vollständige Pfade.
@@ -13,8 +15,6 @@ Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/). Der Releas
 - Spuren/Papierkorb: Laufwerk für Laufwerk leeren, Datenträger ohne Papierkorb brechen nicht mehr ab.
 - Spuren/Ereignisprotokolle: nur Protokolle mit Einträgen älter als 10 Minuten zählen (sie füllen sich sofort neu); der Kontrolllauf kann damit «sauber» melden.
 - Browser: gesperrte Cookie-Datei wird ehrlich angezeigt, WAL-Datenbanken sind lesbar; Credential-Anzeige ohne Namen; Kontext als `b64:` gegen das Quoting von Windows PowerShell 5.1.
-
-## [0.2.0] - 2026-10-31
 
 ### Neu
 - Modul **Windows-Konten**: verbundene Geschäfts-/Schulkonten, Token-Broker (AAD.BrokerPlugin), Anmeldeinformationsverwaltung. Die Domänen-/Azure-AD-Mitgliedschaft und das lokale Windows-Konto bleiben unverändert (nur Hinweis).
